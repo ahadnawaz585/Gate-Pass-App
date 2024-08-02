@@ -155,13 +155,15 @@ const prisma = basePrisma.$extends({
 
         return { data, totalSize };
       },
-      
+
       async gpPgFindDeletedMany(this: any, page: number, pageSize: number) {
         const skip = (page - 1) * pageSize;
 
         const data = await this.findMany({
           where: {
-            isDeleted: null,
+            isDeleted: {
+              not: null,
+            },
           },
           take: pageSize,
           skip: skip,
@@ -169,7 +171,9 @@ const prisma = basePrisma.$extends({
 
         const totalSize = await this.count({
           where: {
-            isDeleted: null,
+            isDeleted: {
+              not: null,
+            },
           },
         });
 
@@ -225,6 +229,5 @@ const prisma = basePrisma.$extends({
     },
   },
 });
-
 
 export default prisma;
