@@ -1,6 +1,5 @@
 
 
-```markdown
 # Gate Pass App REST API
 
 This is a REST API for the Gate Pass App, built with Node.js, Prisma, Express, and TypeScript. It handles the backend operations for managing gate passes, including CRUD operations, authentication, and role-based access control.
@@ -113,9 +112,6 @@ This is a REST API for the Gate Pass App, built with Node.js, Prisma, Express, a
 - **`npm run build`**: Compile TypeScript to JavaScript.
 - **`npm start`**: Start the compiled JavaScript server.
 
-### Contributing
-
-We welcome contributions! Please read our [Contributing Guide](CONTRIBUTING.md) to get started.
 
 ### License
 
@@ -123,6 +119,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ### Contact
 
-For any inquiries or issues, please open an issue in this repository or contact us at support@gatepassapp.com.
+For any inquiries or issues, please open an issue in this repository or contact us at ahadnawaz585@gmail.com.
 ```
 
