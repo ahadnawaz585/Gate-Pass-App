@@ -53,11 +53,11 @@ OFFSET ${offset};
 
         return { data, totalSize };
       },
-      
+
       async gpPgDeletedFindMany(this: any, page: number, pageSize: number) {
         const offset = (page - 1) * pageSize;
         const data = await prisma.$queryRaw(Prisma.sql`
-   SELECT
+  SELECT
     g.id AS gatePassId,
     c.name AS customerName,
     g."issuedAt",
@@ -81,21 +81,24 @@ OFFSET ${offset};
         FROM "GatePassItem" gpi
         JOIN "Item" i ON gpi."itemId" = i.id
         WHERE gpi."gatePassId" = g.id
-          AND i."isDeleted" IS NOT NULL; -- Ensure Item is not deleted
+          AND i."isDeleted" IS NOT NULL  -- Ensure Item is not deleted
     ) AS items
 FROM
     "GatePass" g
 JOIN
     "Customer" c ON g."customerId" = c.id
 WHERE
-    g."isDeleted" IS NOT NULL; -- Ensure GatePass is not deleted
+    g."isDeleted" IS NOT NULL  -- Ensure GatePass is not deleted
 LIMIT ${pageSize}
 OFFSET ${offset};
+
 `);
 
         const totalSize: number = await this.count({
           where: {
-            isDeleted: null,
+            isDeleted: {
+              not: null,
+            },
           },
         });
 
