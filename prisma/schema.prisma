@@ -1,0 +1,68 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Customer {
+  id         String     @id @default(uuid())
+  name       String
+  email      String?
+  phone      String?
+  address    String?
+  gatePasses GatePass[]
+  createdAt  DateTime?
+  updatedAt  DateTime?
+  isDeleted  DateTime?
+}
+
+model Item {
+  id          String         @id @default(uuid())
+  name        String
+  description String?
+  quantity    Int?
+  unitPrice   Float?
+  gatePasses  GatePassItem[]
+  createdAt   DateTime?
+  updatedAt   DateTime?
+  isDeleted   DateTime?
+}
+
+model GatePass {
+  id            String         @id @default(uuid())
+  customer      Customer       @relation(fields: [customerId], references: [id])
+  customerId    String
+  issuedAt      DateTime       @default(now())
+  validUntil    DateTime?
+  status        Status         @default(pending)
+  notes         String?
+  location      String
+  vehicleNo     String
+  storeIncharge String
+  items         GatePassItem[]
+  createdAt     DateTime?
+  updatedAt     DateTime?
+  isDeleted     DateTime?
+}
+
+model GatePassItem {
+  id         String    @id @default(uuid())
+  gatePass   GatePass  @relation(fields: [gatePassId], references: [id])
+  gatePassId String
+  item       Item      @relation(fields: [itemId], references: [id])
+  itemId     String
+  quantity   Int
+  serialNos  String[]
+  createdAt  DateTime?
+  updatedAt  DateTime?
+  isDeleted  DateTime?
+}
+
+enum Status {
+  pending
+  approved
+  cancelled
+}
