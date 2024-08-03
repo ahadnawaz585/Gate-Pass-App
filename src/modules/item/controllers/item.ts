@@ -13,6 +13,13 @@ class ItemController extends BaseController<itemService> {
     this.handleRequest(operation, successMessage, errorMessage, res);
   }
 
+  async getOutOfStockItem(req: Request, res: Response) {
+    const operation = () => this.service.getOutOfStockItems();
+    const successMessage = "out of stock Item retrieved successfully!";
+    const errorMessage = "Error retrieving out of stock Item:";
+    this.handleRequest(operation, successMessage, errorMessage, res);
+  }
+
   async getItem(req: Request, res: Response) {
     const { page, pageSize } = req.body;
     const operation = () => this.service.getItem(page, pageSize);

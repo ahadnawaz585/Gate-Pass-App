@@ -13,6 +13,7 @@ class ItemRoutes {
 
   private initializeRoutes(): void {
     this.router.get('/get', this.controller.getAllItem.bind(this.controller));
+    this.router.get('/getOutOfStock', this.controller.getOutOfStockItem.bind(this.controller));
     this.router.post('/get', this.controller.getItem.bind(this.controller));
     this.router.post('/getDeleted', this.controller.getDeletedItem.bind(this.controller));
     this.router.get('/total', this.controller.getTotalItem.bind(this.controller));

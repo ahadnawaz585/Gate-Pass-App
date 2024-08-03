@@ -7,6 +7,10 @@ class ItemService {
     return await ItemModel.item.gpFindMany();
   }
 
+  async getOutOfStockItems(): Promise<Item[]> {
+    return await ItemModel.item.outOfStockItems();
+  }
+
   async getItem(page: number, pageSize: number): Promise<paginatedData> {
     return await ItemModel.item.gpPgFindMany(page, pageSize);
   }
@@ -39,7 +43,11 @@ class ItemService {
     return await ItemModel.item.gpCount();
   }
 
-  async searchItems(searchTerm: string | string[], page: number, pageSize: number): Promise<paginatedData> {
+  async searchItems(
+    searchTerm: string | string[],
+    page: number,
+    pageSize: number
+  ): Promise<paginatedData> {
     const columns: string[] = ["name", "description"];
     return await ItemModel.item.gpSearch(searchTerm, columns, page, pageSize);
   }
