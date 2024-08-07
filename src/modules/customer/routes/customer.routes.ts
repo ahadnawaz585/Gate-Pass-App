@@ -13,6 +13,7 @@ class CustomerRoutes {
 
   private initializeRoutes(): void {
     this.router.get('/get', this.controller.getAllCustomers.bind(this.controller));
+    this.router.get('/getFrequent', this.controller.getFrequentCustomers.bind(this.controller));
     this.router.post('/get', this.controller.getCustomers.bind(this.controller));
     this.router.post('/getDeleted', this.controller.getDeletedCustomers.bind(this.controller));
     this.router.get('/total', this.controller.getTotalCustomers.bind(this.controller));

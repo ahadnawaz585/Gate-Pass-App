@@ -77,6 +77,13 @@ class CustomerController extends BaseController<CustomerService> {
     this.handleRequest(operation, successMessage, errorMessage, res);
   }
 
+  async getFrequentCustomers(req: Request, res: Response) {
+    const operation = () => this.service.getFrequentCustomer();
+    const successMessage = "Customer retrieved successfully!";
+    const errorMessage = "Error retrieving customer:";
+    this.handleRequest(operation, successMessage, errorMessage, res);
+  }
+
   async restoreCustomer(req: Request, res: Response) {
     const { id } = req.body;
     const operation = () => this.service.restoreCustomer(id);

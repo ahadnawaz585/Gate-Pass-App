@@ -11,15 +11,23 @@ class CustomerService {
     return await customerModel.customer.gpPgFindMany(page, pageSize);
   }
 
-  async getDeletedCustomers(page: number, pageSize: number): Promise<paginatedData> {
+  async getDeletedCustomers(
+    page: number,
+    pageSize: number
+  ): Promise<paginatedData> {
     return await customerModel.customer.gpPgFindDeletedMany(page, pageSize);
   }
 
-  async createCustomer(customerData: Customer | Customer[]): Promise<Customer | Customer[]> {
+  async createCustomer(
+    customerData: Customer | Customer[]
+  ): Promise<Customer | Customer[]> {
     return await customerModel.customer.gpCreate(customerData);
   }
 
-  async updateCustomer(customerId: string, customerData: Customer): Promise<Customer | null> {
+  async updateCustomer(
+    customerId: string,
+    customerData: Customer
+  ): Promise<Customer | null> {
     return await customerModel.customer.gpUpdate(customerId, customerData);
   }
 
@@ -39,9 +47,22 @@ class CustomerService {
     return await customerModel.customer.gpCount();
   }
 
-  async searchCustomer(searchTerm: string | string[], page: number, pageSize: number): Promise<paginatedData> {
-    const columns: string[] = ["name", "email","phone","address"];
-    return await customerModel.customer.gpSearch(searchTerm, columns, page, pageSize);
+  async getFrequentCustomer() {
+    return await customerModel.customer.getCustomersWithMostGatePasses();
+  }
+
+  async searchCustomer(
+    searchTerm: string | string[],
+    page: number,
+    pageSize: number
+  ): Promise<paginatedData> {
+    const columns: string[] = ["name", "email", "phone", "address"];
+    return await customerModel.customer.gpSearch(
+      searchTerm,
+      columns,
+      page,
+      pageSize
+    );
   }
 
   async getTotal() {
@@ -50,4 +71,3 @@ class CustomerService {
 }
 
 export default CustomerService;
- 

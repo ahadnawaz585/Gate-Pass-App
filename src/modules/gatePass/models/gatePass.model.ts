@@ -365,6 +365,47 @@ WHERE
           await prisma.$disconnect();
         }
       },
+
+      async getGatePassesReport() {
+        // Array of month abbreviations
+        const monthNames = [
+          'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+        ];
+      
+        // Generate dates for the last 10 months
+        const last10Months = Array.from({ length: 10 }, (_, i) => {
+          const date = new Date();
+          date.setMonth(date.getMonth() - i);
+          return date;
+        }).reverse();
+      
+        const report = await Promise.all(
+          last10Months.map(async (date) => {
+            const startDate = new Date(date.getFullYear(), date.getMonth(), 1);
+            const endDate = new Date(date.getFullYear(), date.getMonth() + 1, 1);
+      
+            const count = await prisma.gatePass.count({
+              where: {
+                createdAt: {
+                  gte: startDate,
+                  lt: endDate,
+                },
+              },
+            });
+      
+            // Format the month string as YYYY-MMM
+            const monthAbbreviation = monthNames[startDate.getMonth()];
+            return {
+              month: `${startDate.getFullYear()}-${monthAbbreviation}`,
+              count,
+            };
+          })
+        );
+      
+        return report;
+      }
+      
     },
   },
 });

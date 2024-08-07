@@ -72,6 +72,13 @@ class GatePassController extends BaseController<GatePassService> {
     this.handleRequest(operation, successMessage, errorMessage, res);
   }
 
+  async gatePassReport(req: Request, res: Response) {
+    const operation = () => this.service.getGatePassesReport();
+    const successMessage = "GatePass report created successfully!";
+    const errorMessage = "Error creating GatePass report:";
+    this.handleRequest(operation, successMessage, errorMessage, res);
+  }
+
   async gatePassPDF(req: Request, res: any) {
     const { id } = req.body;  
 

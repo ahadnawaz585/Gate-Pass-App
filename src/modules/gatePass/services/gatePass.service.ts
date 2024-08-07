@@ -15,7 +15,10 @@ class GatePassService {
     return await gatePassModel.gatePass.gpPgFindMany(page, pageSize);
   }
 
-  async getDeletedGatePass(page: number, pageSize: number): Promise<paginatedData> {
+  async getDeletedGatePass(
+    page: number,
+    pageSize: number
+  ): Promise<paginatedData> {
     return await gatePassModel.gatePass.gpPgDeletedFindMany(page, pageSize);
   }
 
@@ -40,8 +43,7 @@ class GatePassService {
     await gatePassModel.gatePass.gpRestore(GatePassId);
   }
 
-  async getGatePassById(GatePassId: string): Promise<DetailedGatePass
-  > {
+  async getGatePassById(GatePassId: string): Promise<DetailedGatePass> {
     return await gatePassModel.gatePass.gpFindById(GatePassId);
   }
 
@@ -89,6 +91,10 @@ class GatePassService {
       pageSize,
       status
     );
+  }
+
+  async getGatePassesReport() {
+    return await gatePassModel.gatePass.getGatePassesReport();
   }
 }
 

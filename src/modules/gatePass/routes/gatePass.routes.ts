@@ -13,6 +13,7 @@ class GatePassRoutes {
 
   private initializeRoutes(): void {
     this.router.get('/get', this.controller.getAllGatePass.bind(this.controller));
+    this.router.get('/report', this.controller.gatePassReport.bind(this.controller));
     this.router.post('/get', this.controller.getGatePass.bind(this.controller));
     this.router.post('/getDeleted', this.controller.getDeletedGatePass.bind(this.controller));
     this.router.get('/total', this.controller.getTotalGatePass.bind(this.controller));
