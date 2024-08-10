@@ -24,8 +24,6 @@ export interface Customer {
   export interface GatePass {
     id?: string;
     customerId: string;
-    issuedAt: Date;
-    validUntil?: Date | null;
     status: Status;
     notes?: string | null;
     location: string;

@@ -33,32 +33,30 @@ model Item {
 
 model GatePass {
   id            String         @id @default(uuid())
-  customer      Customer       @relation(fields: [customerId], references: [id])
   customerId    String
-  issuedAt      DateTime       @default(now())
-  validUntil    DateTime?
   status        Status         @default(pending)
   notes         String?
   location      String
   vehicleNo     String
   storeIncharge String
-  items         GatePassItem[]
   createdAt     DateTime?
   updatedAt     DateTime?
   isDeleted     DateTime?
+  items         GatePassItem[]
+  customer      Customer       @relation(fields: [customerId], references: [id])
 }
 
 model GatePassItem {
   id         String    @id @default(uuid())
-  gatePass   GatePass  @relation(fields: [gatePassId], references: [id])
   gatePassId String
-  item       Item      @relation(fields: [itemId], references: [id])
   itemId     String
   quantity   Int
   serialNos  String[]
   createdAt  DateTime?
   updatedAt  DateTime?
-  isDeleted  DateTime?
+  isDeleted  DateTime?  
+  item       Item      @relation(fields: [itemId], references: [id])
+  gatePass   GatePass  @relation(fields: [gatePassId], references: [id])
 }
 
 enum Status {
