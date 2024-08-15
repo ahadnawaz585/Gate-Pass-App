@@ -44,6 +44,17 @@ export interface Customer {
     updatedAt?: Date | null;
     isDeleted?: Date | null;
   }
+
+  export interface CreateGatePassItem {
+    id?: string;
+    gatePassId: string;
+    itemId: string;
+    quantity: number;
+    serialNos: string[];
+    createdAt?: Date | null;
+    updatedAt?: Date | null;
+    isDeleted?: Date | null;
+  }
   
 
   

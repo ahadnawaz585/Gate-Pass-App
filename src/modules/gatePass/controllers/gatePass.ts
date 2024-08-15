@@ -4,7 +4,7 @@ import GatePassService from "../services/gatePass.service";
 import { GatePass } from "../../../types/schema";
 import { GatePassPDF } from "../../../pdf/gatePass";
 import { DetailedGatePass } from "../../../types/paginatedData";
-
+import { CreateGatePassItem } from "../../../types/schema";
 class GatePassController extends BaseController<GatePassService> {
   protected service = new GatePassService();
   private pdfUtility: GatePassPDF = new GatePassPDF();
@@ -65,8 +65,8 @@ class GatePassController extends BaseController<GatePassService> {
   }
 
   async createGatePass(req: Request, res: Response) {
-    const GatePassData: GatePass = req.body;
-    const operation = () => this.service.createGatePass(GatePassData);
+    const { GatePass, GatePassItem } = req.body;
+    const operation = () => this.service.createGatePass(GatePass, GatePassItem);
     const successMessage = "GatePass created successfully!";
     const errorMessage = "Error creating GatePass:";
     this.handleRequest(operation, successMessage, errorMessage, res);
@@ -80,7 +80,7 @@ class GatePassController extends BaseController<GatePassService> {
   }
 
   async gatePassPDF(req: Request, res: any) {
-    const { id } = req.body;  
+    const { id } = req.body;
 
     try {
       const data: DetailedGatePass = await this.service.getGatePassById(id);
@@ -90,7 +90,9 @@ class GatePassController extends BaseController<GatePassService> {
         if (buffer) {
           res.writeHead(200, {
             "Content-Type": "application/pdf",
-            "Content-Disposition": `attachment; filename=${encodeURIComponent(data.customername)}.pdf`,
+            "Content-Disposition": `attachment; filename=${encodeURIComponent(
+              data.customername
+            )}.pdf`,
             "Content-Length": buffer.length,
           });
           res.end(buffer);

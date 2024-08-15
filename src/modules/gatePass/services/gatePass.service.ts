@@ -1,5 +1,5 @@
 import gatePassModel from "../models/gatePass.model";
-import { GatePass } from "../../../types/schema";
+import { CreateGatePassItem, GatePass } from "../../../types/schema";
 import { GatePassPDF } from "../../../pdf/gatePass";
 import { DetailedGatePass, paginatedData } from "../../../types/paginatedData";
 import { Status } from "../../../enums/schema";
@@ -23,9 +23,10 @@ class GatePassService {
   }
 
   async createGatePass(
-    GatePassData: GatePass | GatePass[]
+    GatePassData: GatePass,
+    GatePassItem: CreateGatePassItem[]
   ): Promise<GatePass | GatePass[]> {
-    return await gatePassModel.gatePass.gpCreate(GatePassData);
+    return await gatePassModel.gatePass.gpCreate(GatePassData,GatePassItem);
   }
 
   async updateGatePass(

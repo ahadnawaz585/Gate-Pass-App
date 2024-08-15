@@ -8,16 +8,9 @@ pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 export class GatePassPDF {
   public generateGatePassPDF(data: DetailedGatePass): any {
-    const okashaSmartLogo = "./src/assets/images/Okahsa-Smart-Logo.png";
-    const solarMaxLogo = "./src/assets/images/SolarMax-logo.png";
-    const okashaSmartLogoBuffer = fs.readFileSync(okashaSmartLogo);
-    const solarMaxLogoBuffer = fs.readFileSync(solarMaxLogo);
-    const okashaSmartImageDataURL = `data:image/png;base64,${okashaSmartLogoBuffer.toString(
-      "base64"
-    )}`;
-    const solarMaxImageDataURL = `data:image/png;base64,${solarMaxLogoBuffer.toString(
-      "base64"
-    )}`;
+    const powerHighwayLogo = "./src/assets/images/Power-Highway-Logo.png";
+    const powerHighwayLogoBuffer = fs.readFileSync(powerHighwayLogo);
+    const PowerHighwayImageDataURL = `data:image/png;base64,${powerHighwayLogoBuffer.toString("base64")}`;
 
     const details: any[] = [];
 
@@ -59,7 +52,6 @@ export class GatePassPDF {
         style: "detailsText",
       });
 
-    // Group details into rows of three items each
     const groupedDetails: any[] = [];
     for (let i = 0; i < details.length; i += 3) {
       groupedDetails.push({
@@ -67,110 +59,78 @@ export class GatePassPDF {
       });
     }
 
-    // Generate item details and serial numbers hierarchy
-    const serialNumbersTables: any[] = [];
-    data.items.forEach((item: Item, index: number) => {
-      const itemDetails: any[] = [
-        {
-          canvas: [
-            {
-              type: "line",
-              x1: 0,
-              y1: 0,
-              x2: 515,
-              y2: 0,
-              lineWidth: 2,
-              lineColor: "#1a73e8",
-            },
-          ],
-          margin: [0, 10, 0, 10],
-        },
-        {
-          text: `${index + 1}. ${item.name}`,
-          style: "itemName",
-          margin: [5, 5, 5, 10],
-        },
-        {
-          columns: [
-            {
-              width: "25%",
-              text: `Quantity: ${item.quantity}`,
-              style: "itemDetail",
-            },
-            {
-              width: "25%",
-              text: `Unit Price: ${item.unitPrice}`,
-              style: "itemDetail",
-            },
-            {
-              width: "*",
-              text: `Description: ${item.description}`,
-              style: "itemDetail",
-            },
-          ],
-          margin: [5, 5, 5, 5],
-        },
-        {
-          table: {
-            widths: ["*"],
-            body: [
-              [{ text: "Serial Numbers:", style: "serialNumberHeader" }],
-              ...item.serialNos.map((serialNo: string) => [{ text: serialNo }]),
-            ],
-          },
-          layout: "lightHorizontalLines",
-          style: "serialNumbersTable",
-          margin: [5, 0, 5, 5],
-        },
-        {
-          canvas: [
-            {
-              type: "line",
-              x1: 0,
-              y1: 0,
-              x2: 515,
-              y2: 0,
-              lineWidth: 2,
-              lineColor: "#1a73e8",
-            },
-          ],
-          margin: [0, 10, 0, 10],
-        },
-      ];
+    const blocks: any[] = [];
+    const blockSize = 5;
+    const serialNosPerLine = 10;
 
-      serialNumbersTables.push({
-        stack: itemDetails,
-        style: "itemBox",
+    for (let i = 0; i < data.items.length; i += blockSize) {
+      const itemsBlock = data.items.slice(i, i + blockSize).map((item: Item, index: number) => {
+        // Concatenate all serial numbers into a single string
+        const serialNosString = item.serialNos.join(", ");
+
+        return [
+          {
+            text: `${i + index + 1}. ${item.name}`,
+            style: "itemName",
+            margin: [5, 5, 5, 10],
+          },
+          {
+            columns: [
+              {
+                width: "25%",
+                text: `Quantity: ${item.quantity}`,
+                style: "itemDetail",
+              },
+              {
+                width: "25%",
+                text: `Unit Price: ${item.unitPrice}`,
+                style: "itemDetail",
+              },
+              {
+                width: "*",
+                text: `Description: ${item.description}`,
+                style: "itemDetail",
+              },
+            ],
+            margin: [5, 5, 5, 5],
+          },
+          {
+            text: `Serial Numbers: ${serialNosString}`,
+            style: "serialNumberText",
+            margin: [0, 5],
+            width: 515, // Adjust this width based on your page layout
+          },
+          {
+            canvas: [
+              {
+                type: "line",
+                x1: 0,
+                y1: 0,
+                x2: 515,
+                y2: 0,
+                lineWidth: 2,
+                lineColor: "#1a73e8",
+              },
+            ],
+            margin: [0, 10, 0, 10],
+          },
+        ];
       });
-    });
+
+      blocks.push({
+        stack: itemsBlock,
+        style: "itemBox",
+        margin: [0, 10, 0, 20],
+      });
+    }
 
     const docDefinition: TDocumentDefinitions = {
       content: [
         {
           columns: [
-            { image: okashaSmartImageDataURL, width: 80, alignment: "left" },
-            {
-              text: "",
-              style: "verticalLine",
-              alignment: "left",
-              margin: [10, 0, 10, 0],
-            },
-            { image: solarMaxImageDataURL, width: 80, alignment: "left" },
+            { image: PowerHighwayImageDataURL, width: 80, alignment: "left" },
           ],
         },
-        // {
-        //   canvas: [
-        //     {
-        //       type: "line",
-        //       x1: 0,
-        //       y1: 0,
-        //       x2: 515,
-        //       y2: 0,
-        //       lineWidth: 1,
-        //       lineColor: "#1a73e8",
-        //     },
-        //   ],
-        // },
         {
           text: [
             { text: "info@okashasmart.com | ", style: "contactInfo" },
@@ -196,64 +156,31 @@ export class GatePassPDF {
             },
           ],
         },
-        {
-          text: "Gate Pass",
-          style: "header",
-          alignment: "center",
-          margin: [0, 10, 0, 10],
-        },
-        {
-          canvas: [
-            {
-              type: "line",
-              x1: 0,
-              y1: 0,
-              x2: 515,
-              y2: 0,
-              lineWidth: 1,
-              lineColor: "#1a73e8",
-            },
-          ],
-        },
+        // {
+        //   text: "Gate Pass",
+        //   style: "header",
+        //   alignment: "center",
+        //   margin: [0, 10, 0, 10],
+        // },
+        // {
+        //   canvas: [
+        //     {
+        //       type: "line",
+        //       x1: 0,
+        //       y1: 0,
+        //       x2: 515,
+        //       y2: 0,
+        //       lineWidth: 1,
+        //       lineColor: "#1a73e8",
+        //     },
+        //   ],
+        // },
         {
           style: "detailsContainer",
           stack: groupedDetails,
           margin: [0, 10, 0, 10],
         },
-        // {
-        //   canvas: [
-        //     {
-        //       type: "line",
-        //       x1: 0,
-        //       y1: 0,
-        //       x2: 515,
-        //       y2: 0,
-        //       lineWidth: 1,
-        //       lineColor: "#1a73e8",
-        //     },
-        //   ],
-        // },
-        // {
-        //   text: "Details",
-        //   style: "header",
-        //   alignment: "center",
-        //   margin: [0, 10, 0, 10],
-        // },
-        ...serialNumbersTables,
-        // {
-        //   canvas: [
-        //     {
-        //       type: "line",
-        //       x1: 0,
-        //       y1: 0,
-        //       x2: 515,
-        //       y2: 0,
-        //       lineWidth: 1,
-        //       lineColor: "#1a73e8",
-        //     },
-        //   ],
-        //   margin: [0, 10, 0, 10],
-        // },
+        ...blocks,
       ],
       footer: function (currentPage, pageCount) {
         return {
@@ -274,10 +201,6 @@ export class GatePassPDF {
           fontSize: 12,
           margin: [0, 2, 0, 2],
         },
-        verticalLine: {
-          fontSize: 18,
-          bold: true,
-        },
         detailsContainer: {
           margin: [0, 10, 0, 10],
         },
@@ -289,25 +212,17 @@ export class GatePassPDF {
         itemDetail: {
           margin: [5, 5, 5, 5],
         },
-        serialNumbersTable: {
-          margin: [0, 5, 0, 10],
+        serialNumberText: {
+          margin: [0, 5],
+          fontSize: 10,
         },
         itemBox: {
           margin: [0, 10, 0, 10],
           fillColor: "#F0F0F0",
         },
-        serialNumberHeader: {
-          bold: true,
-          margin: [0, 5, 0, 5],
-          color: "#1a73e8",
-        },
-        color: {
-          color: "#1a73e8",
-        },
         contactInfo: {
           alignment: "left",
           fontSize: 12,
-          // margin: [0, 5, 0, 5],
         },
       },
     };
