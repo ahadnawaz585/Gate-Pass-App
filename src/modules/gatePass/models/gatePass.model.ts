@@ -389,16 +389,44 @@ WHERE
 
       async gpApprovePass(id: string) {
         try {
-          const updatedPass = await prisma.gatePass.update({
+          const gatePassItems = await prisma.gatePassItem.findMany({
+            where: { gatePassId: id },
+          });
+      
+          for (const gatePassItem of gatePassItems) {
+            const item = await prisma.item.gpFindById(gatePassItem.itemId);
+            console.log(item);
+            const remainingQuantity = item.quantity - gatePassItem.quantity;
+            
+            if (remainingQuantity < 0) {
+              return {
+                success: false,
+                message: `Item ${item.name} has insufficient quantity. Available: ${item.quantity}, Requested: ${gatePassItem.quantity}`
+              };
+            }
+      
+            await prisma.item.update({
+              where: { id: gatePassItem.itemId },
+              data: { quantity: remainingQuantity },
+            });
+            
+          }
+      
+          await prisma.gatePass.update({
             where: { id },
             data: { status: "approved" },
           });
+      
+          return { success: true, message: "Gate pass approved successfully." };
+      
         } catch (error) {
           console.error("Error approving gate pass:", error);
+          return { success: false, message: "Error approving gate pass." };
         } finally {
           await prisma.$disconnect();
         }
-      },
+      }
+,      
 
       async getGatePassesReport() {
         // Array of month abbreviations
