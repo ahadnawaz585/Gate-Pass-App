@@ -258,6 +258,7 @@ AND g.status = ${status};
         const data: DetailedGatePass[] = await prisma.$queryRaw(Prisma.sql`
       SELECT
       g.id AS gatePassId,
+      c.id AS customerId,
       c.name AS customerName,
       g."issuedAt",
       g."validUntil",
