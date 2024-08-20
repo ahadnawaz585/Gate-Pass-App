@@ -388,47 +388,111 @@ WHERE
         return data;
       },
 
+      async gpUpdate(
+        this: any,
+        updateId: string,
+        GatePassData: GatePass,
+        GatePassItem: CreateGatePassItem[]
+      ) {
+        try {
+          // Update the GatePass and retrieve the updated data
+          const updated = await prisma.gatePass.update({
+            where: { id: updateId },
+            data: GatePassData,
+          });
+
+          // Check if the update was successful and the ID is valid
+          if (!updated || !updated.id) {
+            throw new Error(`Failed to update GatePass with ID ${updateId}`);
+          }
+
+          // Delete existing GatePassItems associated with the given GatePass
+          await prisma.gatePassItem.deleteMany({
+            where: {
+              gatePassId: updateId,
+            },
+          });
+
+          // Create new GatePassItems
+          if (GatePassItem && GatePassItem.length > 0) {
+            await Promise.all(
+              GatePassItem.map((item) =>
+                prisma.gatePassItem.create({
+                  data: {
+                    ...item,
+                    gatePassId: updated.id, // Use the updated GatePass ID
+                  },
+                })
+              )
+            );
+          }
+
+          return updated;
+        } catch (error) {
+          console.error("Error updating GatePass:", error);
+          throw error;
+        }
+      },
       async gpApprovePass(id: string) {
         try {
           const gatePassItems = await prisma.gatePassItem.findMany({
             where: { gatePassId: id },
           });
-      
+
+          // Iterate over gate pass items and update quantities
           for (const gatePassItem of gatePassItems) {
-            const item = await prisma.item.gpFindById(gatePassItem.itemId);
-            console.log(item);
-            const remainingQuantity = item.quantity - gatePassItem.quantity;
-            
-            if (remainingQuantity < 0) {
+            const item = await prisma.item.findUnique({
+              where: { id: gatePassItem.itemId },
+            });
+
+            if (!item) {
               return {
                 success: false,
-                message: `Item ${item.name} has insufficient quantity. Available: ${item.quantity}, Requested: ${gatePassItem.quantity}`
+                message: `Item with ID ${gatePassItem.itemId} not found.`,
               };
             }
-      
-            await prisma.item.update({
-              where: { id: gatePassItem.itemId },
-              data: { quantity: remainingQuantity },
-            });
-            
+
+            if (gatePassItem.quantity) {
+              if (item.quantity) {
+                const remainingQuantity = item.quantity - gatePassItem.quantity;
+                console.log(
+                  `Item ${item.name}: Remaining Quantity ${remainingQuantity}`
+                );
+
+                if (remainingQuantity < 0) {
+                  return {
+                    success: false,
+                    message: `Item ${item.name} has insufficient quantity. Available: ${item.quantity}, Requested: ${gatePassItem.quantity}`,
+                  };
+                }
+
+                await prisma.item.update({
+                  where: { id: gatePassItem.itemId },
+                  data: { quantity: remainingQuantity },
+                });
+
+                await prisma.gatePass.update({
+                  where: { id },
+                  data: { status: "approved" },
+                });
+              }
+            }
           }
-      
-          await prisma.gatePass.update({
-            where: { id },
-            data: { status: "approved" },
-          });
-      
-          return { success: true, message: "Gate pass approved successfully." };
-      
+
+          // Update gate pass status after all items have been processed
+         
+
+          return {
+            success: true,
+            message: "Gate pass approved successfully.",
+          };
         } catch (error) {
           console.error("Error approving gate pass:", error);
           return { success: false, message: "Error approving gate pass." };
         } finally {
           await prisma.$disconnect();
         }
-      }
-,      
-
+      },
       async getGatePassesReport() {
         // Array of month abbreviations
         const monthNames = [

@@ -31,9 +31,10 @@ class GatePassService {
 
   async updateGatePass(
     GatePassId: string,
-    GatePassData: GatePass
-  ): Promise<GatePass | null> {
-    return await gatePassModel.gatePass.gpUpdate(GatePassId, GatePassData);
+    GatePassData: GatePass,
+    GatePassItem: CreateGatePassItem[]
+  ) {
+    return await gatePassModel.gatePass.gpUpdate(GatePassId, GatePassData,GatePassItem);
   }
 
   async deleteGatePass(GatePassId: string): Promise<void> {

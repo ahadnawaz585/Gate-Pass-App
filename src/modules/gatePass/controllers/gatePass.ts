@@ -107,8 +107,8 @@ class GatePassController extends BaseController<GatePassService> {
   }
 
   async updateGatePass(req: Request, res: Response) {
-    const { id, data } = req.body;
-    const operation = () => this.service.updateGatePass(id, data);
+    const { id, GatePass, GatePassItem } = req.body;
+    const operation = () => this.service.updateGatePass(id, GatePass,GatePassItem);
     const successMessage = "GatePass updated successfully!";
     const errorMessage = "Error updating GatePass:";
     this.handleRequest(operation, successMessage, errorMessage, res);
