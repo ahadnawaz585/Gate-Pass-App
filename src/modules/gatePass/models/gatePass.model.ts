@@ -182,9 +182,9 @@ OFFSET ${offset};
             g."isDeleted" IS NULL -- Ensure GatePass is not deleted
             AND g."issuedAt" >= CAST(${from} AS timestamp)
             AND g."issuedAt" <= CAST(${to} AS timestamp)
-          LIMIT ${pageSize}
-          OFFSET ${offset}
-        `);
+            `);
+            // LIMIT ${pageSize}
+            // OFFSET ${offset}
 
         const response: { total: number }[] = await prisma.$queryRaw(Prisma.sql`
           SELECT CAST(COUNT(*) AS INTEGER) AS total
