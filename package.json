@@ -8,6 +8,8 @@
     "dev": "concurrently \"tsc -w\" \"nodemon server.js\"",
     "start": "nodemon server.js",
     "start-server": "node server.js",
+    "seed": "node seeder.js",
+    "force-seed": "node seeder.js --force",
     "tsc": "tsc -w"
   },
   "author": "ahad",
@@ -19,6 +21,7 @@
     "body-parser": "^1.20.2",
     "cookie-parser": "^1.4.6",
     "dotenv": "^16.4.5",
+    "exceljs": "^4.4.0",
     "express": "^4.18.2",
     "express-validator": "^7.0.1",
     "jsonwebtoken": "^9.0.2",

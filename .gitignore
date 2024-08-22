@@ -30,4 +30,5 @@ Thumbs.db
 
 # prisma migrations
 prisma/**/migrations/
+**/seeder/
 **/migrations/

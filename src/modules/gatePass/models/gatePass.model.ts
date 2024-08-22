@@ -435,64 +435,75 @@ WHERE
       },
       async gpApprovePass(id: string) {
         try {
-          const gatePassItems = await prisma.gatePassItem.findMany({
-            where: { gatePassId: id },
-          });
-
-          // Iterate over gate pass items and update quantities
-          for (const gatePassItem of gatePassItems) {
-            const item = await prisma.item.findUnique({
-              where: { id: gatePassItem.itemId },
+            const gatePassItems = await prisma.gatePassItem.findMany({
+                where: { gatePassId: id },
             });
-
-            if (!item) {
-              return {
-                success: false,
-                message: `Item with ID ${gatePassItem.itemId} not found.`,
-              };
-            }
-
-            if (gatePassItem.quantity) {
-              if (item.quantity) {
-                const remainingQuantity = item.quantity - gatePassItem.quantity;
-                console.log(
-                  `Item ${item.name}: Remaining Quantity ${remainingQuantity}`
-                );
-
-                if (remainingQuantity < 0) {
-                  return {
-                    success: false,
-                    message: `Item ${item.name} has insufficient quantity. Available: ${item.quantity}, Requested: ${gatePassItem.quantity}`,
-                  };
+    
+            // Iterate over gate pass items and update quantities
+            for (const gatePassItem of gatePassItems) {
+                const item = await prisma.item.findUnique({
+                    where: { id: gatePassItem.itemId },
+                });
+    
+                if (!item) {
+                    console.log(`Approval failed: Item with ID ${gatePassItem.itemId} not found.`);
+                    return {
+                        success: false,
+                        message: `Item with ID ${gatePassItem.itemId} not found.`,
+                    };
                 }
-
-                await prisma.item.update({
-                  where: { id: gatePassItem.itemId },
-                  data: { quantity: remainingQuantity },
-                });
-
-                await prisma.gatePass.update({
-                  where: { id },
-                  data: { status: "approved" },
-                });
-              }
+    
+                if (gatePassItem.quantity) {
+                    if (item.quantity) {
+                        const remainingQuantity = item.quantity - gatePassItem.quantity;
+    
+                        if (remainingQuantity < 0) {
+                            console.log(`Approval failed: Item ${item.name} has insufficient quantity. Available: ${item.quantity}, Requested: ${gatePassItem.quantity}`);
+                            return {
+                                success: false,
+                                message: `Item ${item.name} has insufficient quantity. Available: ${item.quantity}, Requested: ${gatePassItem.quantity}`,
+                            };
+                        }
+    
+                        await prisma.item.update({
+                            where: { id: gatePassItem.itemId },
+                            data: { quantity: remainingQuantity },
+                        });
+                    } else {
+                        console.log(`Approval failed: Item ${item.name} does not have a defined quantity.`);
+                        return {
+                            success: false,
+                            message: `Item ${item.name} does not have a defined quantity.`,
+                        };
+                    }
+                } else {
+                    console.log(`Approval failed: Gate pass item with ID ${gatePassItem.id} does not have a defined quantity.`);
+                    return {
+                        success: false,
+                        message: `Gate pass item with ID ${gatePassItem.id} does not have a defined quantity.`,
+                    };
+                }
             }
-          }
-
-          // Update gate pass status after all items have been processed
-         
-
-          return {
-            success: true,
-            message: "Gate pass approved successfully.",
-          };
+    
+            // Update gate pass status after all items have been processed
+            await prisma.gatePass.update({
+                where: { id },
+                data: { status: "approved" },
+            });
+    
+            return {
+                success: true,
+                message: "Gate pass approved successfully.",
+            };
         } catch (error) {
-          console.error("Error approving gate pass:", error);
-          return { success: false, message: "Error approving gate pass." };
+            console.error("Error approving gate pass:", error);
+            return { success: false, message: "Error approving gate pass." };
         } finally {
-          await prisma.$disconnect();
+            await prisma.$disconnect();
         }
-      },
+    }
+    
+,    
       async getGatePassesReport() {
         // Array of month abbreviations
         const monthNames = [
