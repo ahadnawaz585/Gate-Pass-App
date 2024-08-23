@@ -122,9 +122,7 @@ FROM
 JOIN
     "Customer" c ON g."customerId" = c.id
 WHERE
-    g."isDeleted" IS NOT NULL  -- Ensure GatePass is not deleted
-LIMIT ${pageSize}
-OFFSET ${offset};
+    g."isDeleted" IS NOT NULL  -- Ensure GatePass is not deleted;
 
 `);
 
@@ -502,6 +500,7 @@ WHERE
             await prisma.$disconnect();
         }
     }
+    
     
 ,    
       async getGatePassesReport() {

@@ -14,7 +14,7 @@ class SeederHelper {
 
   async Seeder(): Promise<any> {
     const filePath = path.join(__dirname, "/seeder/seeder.xlsx");
-    // this.populateCustomer(filePath);
+    this.populateCustomer(filePath);
     this.populateItem(filePath);
   }
 

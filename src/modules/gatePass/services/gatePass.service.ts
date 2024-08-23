@@ -62,7 +62,7 @@ class GatePassService {
   }
 
   async approveGatePass(GatePassId: string) {
-    await gatePassModel.gatePass.gpApprovePass(GatePassId);
+   return await gatePassModel.gatePass.gpApprovePass(GatePassId);
   }
 
   async getTotalGatePass(): Promise<number> {
