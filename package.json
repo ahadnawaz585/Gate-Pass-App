@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "concurrently \"tsc -w\" \"nodemon server.js\"",
     "start": "nodemon server.js",
+    "reset":"nodemon reset.js",
     "start-server": "node server.js",
     "seed": "node seeder.js",
     "force-seed": "node seeder.js --force",
