@@ -29,6 +29,6 @@ Thumbs.db
 .env
 
 # prisma migrations
-prisma/**/migrations/
-**/seeder/
-**/migrations/
+# prisma/**/migrations/
+# **/seeder/
+# **/migrations/
