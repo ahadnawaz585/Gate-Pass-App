@@ -7,6 +7,18 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Status {
+  pending
+  approved
+  cancelled
+}
+
+enum ParentType {
+  Role
+  User
+  Group
+}
+
 model Customer {
   id         String     @id @default(uuid())
   name       String
@@ -54,13 +66,131 @@ model GatePassItem {
   serialNos  String[]
   createdAt  DateTime?
   updatedAt  DateTime?
-  isDeleted  DateTime?  
+  isDeleted  DateTime?
   item       Item      @relation(fields: [itemId], references: [id])
   gatePass   GatePass  @relation(fields: [gatePassId], references: [id])
 }
 
-enum Status {
-  pending
-  approved
-  cancelled
+model User {
+  id        String    @id @default(uuid()) @db.VarChar(36)
+  username  String    @unique @db.VarChar(256)
+  password  String    @db.VarChar(256)
+  createdAt DateTime?
+  updatedAt DateTime?
+  isDeleted DateTime?
+
+  userGroups      UserGroup[]
+  blacklistTokens BlacklistToken[]
+  loggedInUsers   LoggedInUsers[]
+  userRoles       UserRole[]
+}
+
+model Group {
+  id          String    @id @default(uuid()) @db.VarChar(36)
+  name        String    @unique @db.VarChar(256)
+  readAccess  Json?     @db.JsonB
+  writeAccess Json?     @db.JsonB
+  createdAt   DateTime?
+  updatedAt   DateTime?
+  isDeleted   DateTime?
+
+  userGroups UserGroup[]
+  groupRoles GroupRole[]
+}
+
+model UserGroup {
+  id        String    @id @default(uuid()) @db.VarChar(36)
+  userId    String    @db.VarChar(36)
+  groupId   String    @db.VarChar(36)
+  active    Boolean
+  createdAt DateTime?
+  updatedAt DateTime?
+  isDeleted DateTime?
+
+  user  User  @relation(fields: [userId], references: [id])
+  group Group @relation(fields: [groupId], references: [id])
+
+  @@unique([userId, groupId])
+}
+
+model Role {
+  id          String    @id @default(uuid()) @db.VarChar(36)
+  name        String    @unique
+  readAccess  Json?     @db.JsonB
+  writeAccess Json?     @db.JsonB
+  createdAt   DateTime?
+  updatedAt   DateTime?
+  isDeleted   DateTime?
+
+  userRoles  UserRole[]
+  groupRoles GroupRole[]
+}
+
+model UserRole {
+  id        String    @id @default(uuid()) @db.VarChar(36)
+  userId    String    @db.VarChar(36)
+  roleId    String    @db.VarChar(36)
+  active    Boolean
+  createdAt DateTime?
+  updatedAt DateTime?
+  isDeleted DateTime?
+
+  user User @relation(fields: [userId], references: [id])
+  role Role @relation(fields: [roleId], references: [id])
+
+  @@unique([userId, roleId])
+}
+
+model GroupRole {
+  id        String    @id @default(uuid()) @db.VarChar(36)
+  groupId   String    @db.VarChar(36)
+  roleId    String    @db.VarChar(36)
+  active    Boolean
+  createdAt DateTime?
+  updatedAt DateTime?
+  isDeleted DateTime?
+
+  group Group @relation(fields: [groupId], references: [id])
+  role  Role  @relation(fields: [roleId], references: [id])
+
+  @@unique([groupId, roleId])
+}
+
+model AppFeature {
+  name            String       @id @db.VarChar(256)
+  parentFeatureId String?      @db.VarChar(256)
+  label           String
+  parentFeature   AppFeature?  @relation("ParentChild", fields: [parentFeatureId], references: [name])
+  children        AppFeature[] @relation("ParentChild")
+  createdAt       DateTime?
+  updatedAt       DateTime?
+  isDeleted       DateTime?
+}
+
+model FeaturePermission {
+  id          String     @id @default(uuid()) @db.VarChar(36)
+  parentType  ParentType
+  parentId    String     @db.VarChar(36)
+  permissions Json       @db.JsonB
+  createdAt   DateTime?
+  updatedAt   DateTime?
+  isDeleted   DateTime?
+}
+
+model BlacklistToken {
+  id         String    @id @default(uuid()) @db.VarChar(36)
+  token      String    @unique
+  rememberMe Boolean
+  userId     String    @db.VarChar(36)
+  createdAt  DateTime?
+  user       User      @relation(fields: [userId], references: [id])
+}
+
+model LoggedInUsers {
+  id         String    @id @default(uuid()) @db.VarChar(36)
+  token      String    @unique
+  userId     String    @db.VarChar(36)
+  rememberMe Boolean
+  createdAt  DateTime?
+  user       User      @relation(fields: [userId], references: [id])
 }
