@@ -227,6 +227,29 @@ const prisma = basePrisma.$extends({
 
         return { data, totalSize };
       },
+
+      async gpGetByName(this: any, name: string) {
+        const Data = await this.findFirst({
+          where: {
+            name: name,
+            isDeleted: null,
+          },
+        });
+
+        return Data;
+      },
+      async gpUpdateByName(this: any, updateId: string, updatedData: any) {
+        let newData = {
+          ...updatedData,
+          updatedAt: new Date(),
+        };
+        const updatedItem = await this.update({
+          where: { name: updateId },
+          data: newData,
+        });
+        return updatedItem;
+      },
+
     },
   },
 });
