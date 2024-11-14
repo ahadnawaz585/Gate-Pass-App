@@ -1,6 +1,6 @@
 import GatePassItemModel from "../models/gatePassItem.model";
-import {  GatePassItem } from "../../../types/schema";
-import { paginatedData } from "../../../types/paginatedData";
+import {  GatePassItem } from "../../../../types/schema";
+import { paginatedData } from "../../../../types/paginatedData";
 
 class GatePassItemService {
   async getAllGatePassItem(): Promise<GatePassItem[]> {

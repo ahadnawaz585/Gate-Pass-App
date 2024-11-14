@@ -1,8 +1,8 @@
 import gatePassModel from "../models/gatePass.model";
-import { CreateGatePassItem, GatePass } from "../../../types/schema";
-import { GatePassPDF } from "../../../pdf/gatePass";
-import { DetailedGatePass, paginatedData } from "../../../types/paginatedData";
-import { Status } from "../../../enums/schema";
+import { CreateGatePassItem, GatePass } from "../../../../types/schema";
+import { GatePassPDF } from "../../../../pdf/gatePass";
+import { DetailedGatePass, paginatedData } from "../../../../types/paginatedData";
+import { Status } from "../../../../enums/schema";
 
 class GatePassService {
   private pdfUtility: GatePassPDF = new GatePassPDF();

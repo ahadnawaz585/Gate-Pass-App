@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
-import BaseController from "../../../core/controllers/base.controller";
+import BaseController from "../../../../core/controllers/base.controller";
 import GatePassService from "../services/gatePass.service";
-import { GatePass } from "../../../types/schema";
-import { GatePassPDF } from "../../../pdf/gatePass";
-import { DetailedGatePass } from "../../../types/paginatedData";
-import { CreateGatePassItem } from "../../../types/schema";
+import { GatePass } from "../../../../types/schema";
+import { GatePassPDF } from "../../../../pdf/gatePass";
+import { DetailedGatePass } from "../../../../types/paginatedData";
+import { CreateGatePassItem } from "../../../../types/schema";
 class GatePassController extends BaseController<GatePassService> {
   protected service = new GatePassService();
   private pdfUtility: GatePassPDF = new GatePassPDF();

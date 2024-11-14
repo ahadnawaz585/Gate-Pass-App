@@ -1,12 +1,12 @@
-import prisma from "../../../core/models/base.model";
+import prisma from "../../../../core/models/base.model";
 import { Prisma } from "@prisma/client";
-import { Status } from "../../../enums/schema";
-import { DetailedGatePass } from "../../../types/paginatedData";
+import { Status } from "../../../../enums/schema";
+import { DetailedGatePass } from "../../../../types/paginatedData";
 import {
   CreateGatePassItem,
   GatePass,
   GatePassItem,
-} from "../../../types/schema";
+} from "../../../../types/schema";
 
 const gatePassModel = prisma.$extends({
   model: {

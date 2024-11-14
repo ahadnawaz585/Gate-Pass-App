@@ -1,6 +1,6 @@
 import customerModel from "../models/cutomer.model";
-import { Customer } from "../../../types/schema";
-import { paginatedData } from "../../../types/paginatedData";
+import { Customer } from "../../../../types/schema";
+import { paginatedData } from "../../../../types/paginatedData";
 
 class CustomerService {
   async getAllCustomers(): Promise<Customer[]> {

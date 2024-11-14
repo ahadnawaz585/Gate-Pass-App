@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import BaseController from '../../../core/controllers/base.controller';
+import BaseController from '../../../../core/controllers/base.controller';
 import GatePassItemService from '../services/gatePassItem.service';
-import { GatePassItem } from '../../../types/schema';
+import { GatePassItem } from '../../../../types/schema';
 
 class GatePassItemController extends BaseController<GatePassItemService> {
   protected service = new GatePassItemService();

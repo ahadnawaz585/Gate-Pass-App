@@ -1,11 +1,11 @@
 import express, { Express, Request, Response, NextFunction } from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
-import CustomerRoutes from "./src/modules/customer/routes/customer.routes";
+import CustomerRoutes from "./src/modules/app/customer/routes/customer.routes";
 const cookieParser = require("cookie-parser");
-import GatePassRoutes from "./src/modules/gatePass/routes/gatePass.routes";
-import GatePassItemRoutes from "./src/modules/gatePassItem/routes/gatePassItem.routes";
-import ItemRoutes from "./src/modules/item/routes/item.routes";
+import GatePassRoutes from "./src/modules/app/gatePass/routes/gatePass.routes";
+import GatePassItemRoutes from "./src/modules/app/gatePassItem/routes/gatePassItem.routes";
+import ItemRoutes from "./src/modules/app/item/routes/item.routes";
 import AuthRoutes from "./src/Auth/routes/auth.routes";
 import routesHelper from "./src/helper/routes.helper";
 

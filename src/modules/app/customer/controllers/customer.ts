@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import BaseController from "../../../core/controllers/base.controller";
+import BaseController from "../../../../core/controllers/base.controller";
 import CustomerService from "../services/customer.service";
-import { Customer } from "../../../types/schema";
+import { Customer } from "../../../../types/schema";
 
 class CustomerController extends BaseController<CustomerService> {
   protected service = new CustomerService();

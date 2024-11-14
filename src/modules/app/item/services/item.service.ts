@@ -1,6 +1,6 @@
 import ItemModel from "../models/item.model";
-import { Item } from "../../../types/schema";
-import { paginatedData } from "../../../types/paginatedData";
+import { Item } from "../../../../types/schema";
+import { paginatedData } from "../../../../types/paginatedData";
 
 class ItemService {
   async getAllItem(): Promise<Item[]> {

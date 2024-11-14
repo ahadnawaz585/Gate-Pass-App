@@ -1,7 +1,7 @@
 import * as Excel from "exceljs";
 const path = require("path");
-import CustomerService from "../modules/customer/services/customer.service";
-import ItemService from "../modules/item/services/item.service";
+import CustomerService from "../modules/app/customer/services/customer.service";
+import ItemService from "../modules/app/item/services/item.service";
 
 class SeederHelper {
   private customerService: CustomerService;

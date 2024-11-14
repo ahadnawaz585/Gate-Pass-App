@@ -1,5 +1,5 @@
 
-import prisma from "../../../core/models/base.model";
+import prisma from "../../../../core/models/base.model";
 
 const GatePassItemModel = prisma.$extends({
   model: {
