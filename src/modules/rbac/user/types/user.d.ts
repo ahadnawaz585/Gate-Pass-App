@@ -4,7 +4,7 @@ export interface User {
   id?: string;
   username: string;
   password: string;
-  defaultCompanyId?: string;
+  // defaultCompanyId?: string;
   readAccess?: AllowanceHeads;
   writeAccess?: AllowanceHeads;
   createdAt?: Date | null | undefined;
@@ -19,5 +19,5 @@ export interface UserData {
   defaultCompanyId?: string;
   userRole: string[];
   userGroup: string[];
-  companyUser: string[];
+  // companyUser: string[];
 }

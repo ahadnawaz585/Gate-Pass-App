@@ -7,6 +7,11 @@ import GatePassRoutes from "./src/modules/app/gatePass/routes/gatePass.routes";
 import GatePassItemRoutes from "./src/modules/app/gatePassItem/routes/gatePassItem.routes";
 import ItemRoutes from "./src/modules/app/item/routes/item.routes";
 import AuthRoutes from "./src/Auth/routes/auth.routes";
+import UserDataRoutes from "./src/modules/rbac/user/routes/userData.routes";
+import UserRoutes from "./src/modules/rbac/user/routes/user.routes";
+import RoleRoutes from "./src/modules/rbac/role/routes/role.routes";
+import AccessRoutes from "./src/modules/rbac/Access/routes/access.routes";
+import GroupRoutes from "./src/modules/rbac/group/routes/group.routes";
 import routesHelper from "./src/helper/routes.helper";
 
 class App {
