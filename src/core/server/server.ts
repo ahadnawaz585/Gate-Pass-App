@@ -1,21 +1,21 @@
 import express, { Express, Request, Response, NextFunction } from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
-import CustomerRoutes from "./src/modules/app/customer/routes/customer.routes";
+import CustomerRoutes from "../../modules/app/customer/routes/customer.routes";
 const cookieParser = require("cookie-parser");
-import GatePassRoutes from "./src/modules/app/gatePass/routes/gatePass.routes";
-import GatePassItemRoutes from "./src/modules/app/gatePassItem/routes/gatePassItem.routes";
-import ItemRoutes from "./src/modules/app/item/routes/item.routes";
-import AuthRoutes from "./src/Auth/routes/auth.routes";
+import GatePassRoutes from "../../modules/app/gatePass/routes/gatePass.routes";
+import GatePassItemRoutes from "../../modules/app/gatePassItem/routes/gatePassItem.routes";
+import ItemRoutes from "../../modules/app/item/routes/item.routes";
+// import AuthRoutes from "../../Auth/routes/auth.routes";
 
-import UserDataRoutes from "./src/modules/rbac/user/routes/userData.routes";
-import UserRoutes from "./src/modules/rbac/user/routes/user.routes";
-import RoleRoutes from "./src/modules/rbac/role/routes/role.routes";
-import AccessRoutes from "./src/modules/rbac/Access/routes/access.routes";
-import GroupRoutes from "./src/modules/rbac/group/routes/group.routes";
-import routesHelper from "./src/helper/routes.helper";
-import GroupRoleRoutes from "./src/modules/rbac/group/routes/groupRole.routes";
-import UserGroupRoutes from "./src/modules/rbac/group/routes/userGroup.routes";
+import UserDataRoutes from "../../modules/rbac/user/routes/userData.routes";
+import UserRoutes from "../../modules/rbac/user/routes/user.routes";
+import RoleRoutes from "../../modules/rbac/role/routes/role.routes";
+import AccessRoutes from "../../modules/rbac/Access/routes/access.routes";
+import GroupRoutes from "../../modules/rbac/group/routes/group.routes";
+import routesHelper from "../../helper/routes.helper";
+import GroupRoleRoutes from "../../modules/rbac/group/routes/groupRole.routes";
+import UserGroupRoutes from "../../modules/rbac/group/routes/userGroup.routes";
 
 class App {
   private app: Express;
@@ -65,9 +65,11 @@ class App {
       GroupRoleRoutes,
       RoleRoutes,
       UserDataRoutes,
-      AccessRoutes
+      AccessRoutes,
+      UserGroupRoutes
     ];
-    const openRoutes: any[] = [AuthRoutes,UserRoutes];
+    
+    const openRoutes: any[] = [UserRoutes];
 
     this.app.get("/", (req: Request, res: Response) => {
       res.json({ message: `App is running ` });
@@ -98,4 +100,5 @@ class App {
   }
 }
 
-new App();
+export default App;
+
