@@ -15,3 +15,24 @@ export interface createGroup {
   roles:string[];
   companies:string[]
 }
+
+export interface GroupRole {
+  id?:string;
+   groupId: string;
+   roleId: string;
+   active:boolean;
+   createdAt?: Date | null | undefined;
+   updatedAt?: Date | null | undefined;
+   isDeleted?: Date | null | undefined;
+ }
+
+ export interface UserGroup{
+  id?:string;
+   userId: string;
+   groupId: string;
+   active: boolean;
+   createdAt?: Date | null | undefined;
+   updatedAt?: Date | null | undefined;
+   isDeleted?: Date | null | undefined;
+ }
+ 
