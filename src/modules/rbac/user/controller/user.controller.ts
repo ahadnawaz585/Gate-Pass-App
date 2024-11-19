@@ -217,10 +217,10 @@ class UserController extends BaseController<UserService> {
 
   async logoutUser(req: Request, res: Response) {
     const token = AuthHelper.getTokenFromHeader(req);
-
+    console.log("token:",token);
     if (token) {
       const userId = AuthHelper.getUserIdFromHeader(req);
-
+      console.log("user id :",userId);
       if (userId && token) {
         await this.service.removeLoggedInUser(userId, token);
       }

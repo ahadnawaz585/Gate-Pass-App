@@ -1,13 +1,18 @@
 import * as Excel from "exceljs";
 const path = require("path");
+import { defaultUser } from "../static/staticData";
 import CustomerService from "../modules/app/customer/services/customer.service";
 import ItemService from "../modules/app/item/services/item.service";
+import UserService from "../modules/rbac/user/service/user.service";
+import prisma from "../core/models/base.model";
 
 class SeederHelper {
+  private userService: UserService;
   private customerService: CustomerService;
   private itemService: ItemService;
 
   constructor() {
+    this.userService = new UserService();
     this.customerService = new CustomerService();
     this.itemService = new ItemService();
   }
@@ -16,7 +21,25 @@ class SeederHelper {
     const filePath = path.join(__dirname, "/seeder/seeder.xlsx");
     this.populateCustomer(filePath);
     this.populateItem(filePath);
+    this.actCreateDefaultUser();
+
   }
+
+  private async actCreateDefaultUser() {
+    for (const user of defaultUser) {
+      const existingUser = await this.userService.getUserByUsername(
+        user.username
+      );
+      if (!existingUser) {
+        await this.userService.createUsers(user);
+        // await prisma.companyUsers.actCreate(userCompany);
+        console.log(`User ${user.username} created successfully.`);
+      } else {
+        console.log(`User ${user.username} already exists. Skipping creation.`);
+      }
+    }
+  }
+
 
   private async populateCustomer(filePath: string) {
     const workbook = new Excel.Workbook();

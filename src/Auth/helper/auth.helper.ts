@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
+import { secretKey } from "../../environment/environment";
 
 class AuthHelper {
   static getTokenFromHeader(req: Request): string | null {
@@ -9,17 +10,17 @@ class AuthHelper {
     return null;
   }
 
-  static getUserIdFromHeader(req: Request): string {
+  static getUserIdFromHeader(req: Request) {
     if (req.headers && req.headers.authorization) {
       const authorization = req.headers.authorization.split(" ")[1];
       try {
-        const decoded: any = jwt.verify(authorization, "your_secret_key");
+        const decoded: any = jwt.verify(authorization, secretKey);
         return decoded.userId;
       } catch (e) {
         console.error("error");
       }
     }
-    throw new Error("Authorization header missing");
+    console.error("Authorization header missing");
   }
 
 //   static getCompanyIdFromHeader(req: Request): string {

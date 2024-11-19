@@ -6,9 +6,9 @@ const cookieParser = require("cookie-parser");
 import GatePassRoutes from "../../modules/app/gatePass/routes/gatePass.routes";
 import GatePassItemRoutes from "../../modules/app/gatePassItem/routes/gatePassItem.routes";
 import ItemRoutes from "../../modules/app/item/routes/item.routes";
-// import AuthRoutes from "../../Auth/routes/auth.routes";
+import AuthRoutes from "../../Auth/routes/auth.routes";
 
-import UserDataRoutes from "../../modules/rbac/user/routes/userData.routes";
+// import UserDataRoutes from "../../modules/rbac/user/routes/userData.routes";
 import UserRoutes from "../../modules/rbac/user/routes/user.routes";
 import RoleRoutes from "../../modules/rbac/role/routes/role.routes";
 import AccessRoutes from "../../modules/rbac/Access/routes/access.routes";
@@ -64,12 +64,12 @@ class App {
       GroupRoutes,
       GroupRoleRoutes,
       RoleRoutes,
-      UserDataRoutes,
+      UserRoutes,
       AccessRoutes,
       UserGroupRoutes
     ];
     
-    const openRoutes: any[] = [UserRoutes];
+    const openRoutes: any[] = [AuthRoutes];
 
     this.app.get("/", (req: Request, res: Response) => {
       res.json({ message: `App is running ` });

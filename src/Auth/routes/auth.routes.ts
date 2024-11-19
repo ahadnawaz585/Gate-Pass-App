@@ -1,19 +1,25 @@
-import { Router } from "express";
-import auth from "../controller/auth";
+import express, { Router } from 'express';
+import UserController from '../../modules/rbac/user/controller/user.controller';
 
 class AuthRoutes {
-  public router: Router;
+  private router: Router;
+  private controller: UserController;
 
   constructor() {
-    this.router = Router();
+    this.router = express.Router();
+    this.controller = new UserController();
     this.initializeRoutes();
   }
 
-  private initializeRoutes() {
-    this.router.post("/generateToken", auth.generateToken);
+  private initializeRoutes(): void {
+    this.router.post('/login', this.controller.loginUser.bind(this.controller));
+    this.router.get('/logout', this.controller.logoutUser.bind(this.controller));
+    this.router.get('/logoutOfAllDevices', this.controller.logoutOfAllDevices.bind(this.controller));
+    this.router.post('/logoutUserOfAllDevices', this.controller.logoutUserOfAllDevices.bind(this.controller));
   }
+  
 
-  public getRouter() {
+  public getRouter(): Router {
     return this.router;
   }
 }
