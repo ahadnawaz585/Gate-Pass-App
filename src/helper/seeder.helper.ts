@@ -22,9 +22,9 @@ class SeederHelper {
 
   async Seeder(): Promise<any> {
     await this.gpCreateFeatures();
-    const filePath = path.join(__dirname, "/seeder/seeder.xlsx");
-    this.populateCustomer(filePath);
-    this.populateItem(filePath);
+    // const filePath = path.join(__dirname, "/seeder/seeder.xlsx");
+    // this.populateCustomer(filePath);
+    // this.populateItem(filePath);
     this.gpCreateDefaultUser();
 
   }
