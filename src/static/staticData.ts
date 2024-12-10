@@ -49,12 +49,24 @@ export const defaultUser: UserData[] = [
 
 export const features: AppFeature[] = [
   { name: "login.*", label: "Login" },
+  { name: "analytics.*", label: "Analytics" },
+  {
+    name: "analytics.nav.*",
+    label: "Analytics (Nav)",
+    parentFeatureId: "analytics.*",
+  },
+  {
+    name: "analytics.read.*",
+    label: "Analytics Read",
+    parentFeatureId: "analytics.*",
+  },
   { name: "login.app.*", label: "Login App", parentFeatureId: "login.*" },
   { name: "login.admin.*", label: "Login Admin", parentFeatureId: "login.*" },
   { name: "voucher.*", label: "Voucher (Nav)" },
   { name: "voucher.create.*", parentFeatureId: "voucher.*", label: "Create" },
   { name: "voucher.read.*", parentFeatureId: "voucher.*", label: "Read" },
   { name: "voucher.update.*", parentFeatureId: "voucher.*", label: "Update" },
+  { name: "voucher.restore.*", parentFeatureId: "voucher.*", label: "Restore" },
   {
     name: "voucher.updatePost.*",
     parentFeatureId: "voucher.*",
@@ -68,11 +80,17 @@ export const features: AppFeature[] = [
   { name: "customer.read.*", parentFeatureId: "customer.*", label: "Read" },
   { name: "customer.update.*", parentFeatureId: "customer.*", label: "Update" },
   { name: "customer.delete.*", parentFeatureId: "customer.*", label: "Delete" },
+  {
+    name: "customer.restore.*",
+    parentFeatureId: "customer.*",
+    label: "Restore",
+  },
   { name: "item.*", label: "Item (Nav)" },
   { name: "item.create.*", parentFeatureId: "item.*", label: "Create" },
   { name: "item.read.*", parentFeatureId: "item.*", label: "Read" },
   { name: "item.update.*", parentFeatureId: "item.*", label: "Update" },
   { name: "item.delete.*", parentFeatureId: "item.*", label: "Delete" },
+  { name: "item.restore.*", parentFeatureId: "item.*", label: "Restore" },
   { name: "user.*", label: "User (Nav)" },
   { name: "user.create.*", parentFeatureId: "user.*", label: "Create" },
   { name: "user.read.*", parentFeatureId: "user.*", label: "Read" },
