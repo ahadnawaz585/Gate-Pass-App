@@ -60,6 +60,11 @@ export const features: AppFeature[] = [
     label: "Analytics Read",
     parentFeatureId: "analytics.*",
   },
+  {
+    name: "analytics.graphs.*",
+    label: "Analytics Graphs",
+    parentFeatureId: "analytics.*",
+  },
   { name: "login.app.*", label: "Login App", parentFeatureId: "login.*" },
   { name: "login.admin.*", label: "Login Admin", parentFeatureId: "login.*" },
   { name: "voucher.*", label: "Voucher (Nav)" },
