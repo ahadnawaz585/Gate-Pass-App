@@ -4,7 +4,7 @@ import { createGroup } from "../types/group";
 const groupModel = prisma.$extends({
     model: {
       group: {
-        async actSoftDelete(this: any, id: string) {
+        async gpSoftDelete(this: any, id: string) {
           const existingItem = await this.findUnique({ where: { id } });
           if (existingItem.isDeleted === null) {
             await this.update({
@@ -26,7 +26,7 @@ const groupModel = prisma.$extends({
           });
         },
   
-        async actCreate(this: any, data: createGroup) {
+        async gpCreate(this: any, data: createGroup) {
         //   const rules: BusinessRule[] =
         //     await businessRuleModel.businessRule.actFindByFeatureId(
         //       "ca.create.*"
@@ -73,7 +73,7 @@ const groupModel = prisma.$extends({
           return createdItem;
         },
   
-        async actUpdate(this: any, groupId: string, newData: createGroup) {
+        async gpUpdate(this: any, groupId: string, newData: createGroup) {
           const updatedGroup = await this.update({
             where: { id: groupId },
             data: { name: newData.name },

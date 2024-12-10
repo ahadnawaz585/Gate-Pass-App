@@ -1,31 +1,35 @@
 import * as Excel from "exceljs";
 const path = require("path");
-import { defaultUser } from "../static/staticData";
+import { defaultUser, features } from "../static/staticData";
 import CustomerService from "../modules/app/customer/services/customer.service";
 import ItemService from "../modules/app/item/services/item.service";
 import UserService from "../modules/rbac/user/service/user.service";
+import AppFeatureService from "../modules/rbac/Features/service/feature.service";
 import prisma from "../core/models/base.model";
 
 class SeederHelper {
   private userService: UserService;
   private customerService: CustomerService;
   private itemService: ItemService;
+  private appFeaturesService: AppFeatureService;
 
   constructor() {
     this.userService = new UserService();
     this.customerService = new CustomerService();
     this.itemService = new ItemService();
+    this.appFeaturesService = new AppFeatureService();
   }
 
   async Seeder(): Promise<any> {
+    await this.gpCreateFeatures();
     const filePath = path.join(__dirname, "/seeder/seeder.xlsx");
     this.populateCustomer(filePath);
     this.populateItem(filePath);
-    this.actCreateDefaultUser();
+    this.gpCreateDefaultUser();
 
   }
 
-  private async actCreateDefaultUser() {
+  private async gpCreateDefaultUser() {
     for (const user of defaultUser) {
       const existingUser = await this.userService.getUserByUsername(
         user.username
@@ -37,6 +41,16 @@ class SeederHelper {
       } else {
         console.log(`User ${user.username} already exists. Skipping creation.`);
       }
+    }
+  }
+
+  private async gpCreateFeatures() {
+    const data = await this.appFeaturesService.getAllAppFeatures();
+    if (data.length > 0) {
+      console.log("skipping Features creation");
+    } else {
+      await prisma.appFeature.gpCreate(features);
+      console.log("Features created successfully.");
     }
   }
 

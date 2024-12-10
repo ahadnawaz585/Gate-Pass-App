@@ -5,7 +5,7 @@ import { TDocumentDefinitions } from "pdfmake/interfaces";
 import { DetailedGatePass, Item } from "../types/paginatedData";
 import { formatDate } from "../helper/date.helper";
 
-pdfMake.vfs = pdfFonts.pdfMake.vfs;
+// pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 export class GatePassPDF {
   public generateGatePassPDF(data: DetailedGatePass): any {

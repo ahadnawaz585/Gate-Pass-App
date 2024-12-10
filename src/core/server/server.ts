@@ -7,6 +7,7 @@ import GatePassRoutes from "../../modules/app/gatePass/routes/gatePass.routes";
 import GatePassItemRoutes from "../../modules/app/gatePassItem/routes/gatePassItem.routes";
 import ItemRoutes from "../../modules/app/item/routes/item.routes";
 import AuthRoutes from "../../Auth/routes/auth.routes";
+import path from "path";
 
 // import UserDataRoutes from "../../modules/rbac/user/routes/userData.routes";
 import UserRoutes from "../../modules/rbac/user/routes/user.routes";
@@ -16,6 +17,9 @@ import GroupRoutes from "../../modules/rbac/group/routes/group.routes";
 import routesHelper from "../../helper/routes.helper";
 import GroupRoleRoutes from "../../modules/rbac/group/routes/groupRole.routes";
 import UserGroupRoutes from "../../modules/rbac/group/routes/userGroup.routes";
+import AppFeatureRoutes from "../../modules/rbac/Features/routes/feature.routes";
+import UserRoleRoutes from "../../modules/rbac/user/routes/userRole.routes";
+import FeaturePermissionRoutes from "../../modules/rbac/Features/routes/featurePermission.routes";
 
 class App {
   private app: Express;
@@ -31,25 +35,21 @@ class App {
   }
 
   private accessControl() {
-    // this.app.use(cors());
+    this.app.use(cors({ origin: true }));
     this.app.use(cookieParser());
     this.app.use((req: Request, res: Response, next: NextFunction) => {
       res.setHeader("Access-Control-Allow-Origin", "*");
-      res.setHeader(
-        "Access-Control-Allow-Methods",
-        "GET, POST, PUT, PATCH, DELETE"
-      );
-      res.setHeader(
-        "Access-Control-Allow-Headers",
-        "Content-Type, Authorization, Accept, X-Requested-With, application/json"
-      );
+      res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE");
+      res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, Accept, X-Requested-With, application/json");
       next();
     });
+    
   }
 
   private initializeMiddleware() {
     this.app.use(bodyParser.json());
     this.app.use(bodyParser.urlencoded({ extended: true }));
+    this.app.use('/uploads', express.static(path.join(__dirname, 'src', 'assets', 'uploads')));
   }
 
   private initializeRoutes(): void {
@@ -65,8 +65,12 @@ class App {
       GroupRoleRoutes,
       RoleRoutes,
       UserRoutes,
+      UserGroupRoutes,
+      UserRoleRoutes,
+      FeaturePermissionRoutes,
       AccessRoutes,
-      UserGroupRoutes
+      UserGroupRoutes,
+      AppFeatureRoutes
     ];
     
     const openRoutes: any[] = [AuthRoutes];
@@ -83,7 +87,7 @@ class App {
   }
 
   private async startServer(): Promise<void> {
-    const port = process.env.PORT || 3000;
+    const port = process.env.PORT || 3001;
     this.app.listen(port, () => {
       console.log(`Server is running on port ${port}`);
     });

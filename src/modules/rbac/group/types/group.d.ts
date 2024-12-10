@@ -13,7 +13,7 @@ export interface createGroup {
   name: string;
   users: string[];
   roles:string[];
-  companies:string[]
+  // companies:string[]
 }
 
 export interface GroupRole {

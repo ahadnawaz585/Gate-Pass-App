@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import prisma from "../../../../core/models/base.model";
 import { Prisma } from "@prisma/client";
-import { User,UserData } from "../types/user";
+import { User, UserData } from "../types/user";
 import blacklistTokenModel from "../../Token/models/token.model";
 import { blackListedTokens } from "../../Token/types/token";
 import accessModel from "../../Access/models/access.model";
@@ -49,12 +49,12 @@ const userModel = prisma.$extends({
         //   },
         // });
       },
-    //   async changeDefaultCompany(id: string, companyId: string) {
-    //     await prisma.user.update({
-    //       where: { id },
-    //       data: { defaultCompanyId: companyId, updatedAt: new Date() },
-    //     });
-    //   },
+      //   async changeDefaultCompany(id: string, companyId: string) {
+      //     await prisma.user.update({
+      //       where: { id },
+      //       data: { defaultCompanyId: companyId, updatedAt: new Date() },
+      //     });
+      //   },
 
       async gpFindUnique(this: any, username: any) {
         const user = await this.findUnique({
@@ -84,13 +84,12 @@ const userModel = prisma.$extends({
             await blacklistTokenModel.blacklistToken.gpCreate({
               userId,
               token: user.token || "",
-              rememberMe: user.rememberMe || false
+              rememberMe: user.rememberMe || false,
             });
           }
 
           return users;
         } else {
-    
           const data = await prisma.loggedInUsers.findFirst({
             where: {
               userId: userId,
@@ -111,7 +110,7 @@ const userModel = prisma.$extends({
             await blacklistTokenModel.blacklistToken.gpCreate({
               userId: userId,
               token: token,
-              rememberMe:data.rememberMe
+              rememberMe: data.rememberMe,
             });
           }
         }
@@ -137,9 +136,7 @@ const userModel = prisma.$extends({
         const groupIds: string[] = await accessModel.role.getUserGroupsIds(
           userId
         );
-        if (
-          userId === "58c55d6a-910c-46f8-a422-4604bea6cd15" 
-        ) {
+        if (userId === "58c55d6a-910c-46f8-a422-4604bea6cd15") {
           const count = await this.count({
             where: {
               isDeleted: null,
@@ -237,21 +234,39 @@ const userModel = prisma.$extends({
           return null;
         }
         const data: UserData[] =
-          await prisma.$queryRaw(Prisma.sql`SELECT "User".username ,
-          ARRAY(SELECT DISTINCT "R"."name" FROM "UserRole" AS "UR" LEFT JOIN "Role" AS "R" ON "UR"."roleId" = "R".id WHERE "UR"."userId" = "User".id) AS "userRole", 
-          ARRAY(SELECT DISTINCT "G"."name" FROM "UserGroup" AS "UG" LEFT JOIN "Group" AS "G" ON "UG"."groupId" = "G".id WHERE "UG"."userId" = "User".id) AS "userGroup"
-		  FROM "User"
-   WHERE "User".id =${id};
+          await prisma.$queryRaw(Prisma.sql`SELECT 
+    "User".username,
+    ARRAY(
+        SELECT DISTINCT "R"."name" 
+        FROM "UserRole" AS "UR" 
+        LEFT JOIN "Role" AS "R" 
+        ON "UR"."roleId" = "R".id 
+        WHERE "UR"."userId" = "User".id 
+          AND "UR"."isDeleted" IS NULL 
+          AND "R"."isDeleted" IS NULL
+    ) AS "userRole",
+    ARRAY(
+        SELECT DISTINCT "G"."name" 
+        FROM "UserGroup" AS "UG" 
+        LEFT JOIN "Group" AS "G" 
+        ON "UG"."groupId" = "G".id 
+        WHERE "UG"."userId" = "User".id 
+          AND "UG"."isDeleted" IS NULL 
+          AND "G"."isDeleted" IS NULL
+    ) AS "userGroup"
+FROM "User"
+WHERE "User".id = ${id}
+  AND "User"."isDeleted" IS NULL;
       `);
 
         const userData: UserData = {
           id: data[0].id,
           username: data[0].username,
-        //   defaultCompanyId: data[0].defaultCompanyId,
+          //   defaultCompanyId: data[0].defaultCompanyId,
           password: "",
           userRole: data[0].userRole,
           userGroup: data[0].userGroup,
-        //   companyUser: data[0].companyUser,
+          //   companyUser: data[0].companyUser,
         };
 
         return userData;
@@ -260,7 +275,7 @@ const userModel = prisma.$extends({
         this: any,
         page: number,
         pageSize: number,
-        userId: string,
+        userId: string
         // companyId?: string
       ) {
         const skip = (page - 1) * pageSize;
@@ -274,9 +289,7 @@ const userModel = prisma.$extends({
         // console.log(userId);
         // console.log(roleIds);
         // console.log(groupIds);
-        if (
-          userId === "58c55d6a-910c-46f8-a422-4604bea6cd15" 
-        ) {
+        if (userId === "58c55d6a-910c-46f8-a422-4604bea6cd15") {
           const data = await this.findMany({
             where: {
               isDeleted: null,
@@ -401,7 +414,7 @@ const userModel = prisma.$extends({
         searchTerm: string | string[],
         columns: string[],
         pageNumber: number = 1,
-        pageSize: number = 10,
+        pageSize: number = 10
         // userId: string
       ) {
         const excludedId = "58c55d6a-910c-46f8-a422-4604bea6cd15";
@@ -616,7 +629,7 @@ const userModel = prisma.$extends({
         const newData: User = {
           username: data.username,
           password: hashedPassword,
-        //   defaultCompanyId: data.companyUser[0],
+          //   defaultCompanyId: data.companyUser[0],
           // readAccess: { ...readAccess },
           // writeAccess:{...writeAccess},
           createdAt: new Date(),
@@ -693,9 +706,7 @@ const userModel = prisma.$extends({
       },
 
       async checkPreviousPassowrd(this: any, id: string, password: string) {
-        const user = await prisma.user.gpFindById(
-          id
-        );
+        const user = await prisma.user.gpFindById(id);
 
         if (bcrypt.compareSync(password, user.password)) {
           return true;
@@ -781,29 +792,29 @@ const userModel = prisma.$extends({
             }
           }
 
-        //   await prisma.companyUsers.deleteMany({
-        //     where: { userId: id },
-        //   });
+          //   await prisma.companyUsers.deleteMany({
+          //     where: { userId: id },
+          //   });
 
-        //   if (data.companyUser.length > 0) {
-        //     for (const companyId of data.companyUser) {
-        //       const company = await prisma.company.findUnique({
-        //         where: { id: companyId },
-        //       });
-        //       if (company) {
-        //         const userCompany = {
-        //           userId: updatedUser.id,
-        //           companyId,
-        //           active: true,
-        //         };
-        //         await prisma.companyUsers.create({
-        //           data: userCompany,
-        //         });
-        //       } else {
-        //         return "Company does not exist";
-        //       }
-        //     }
-        //   }
+          //   if (data.companyUser.length > 0) {
+          //     for (const companyId of data.companyUser) {
+          //       const company = await prisma.company.findUnique({
+          //         where: { id: companyId },
+          //       });
+          //       if (company) {
+          //         const userCompany = {
+          //           userId: updatedUser.id,
+          //           companyId,
+          //           active: true,
+          //         };
+          //         await prisma.companyUsers.create({
+          //           data: userCompany,
+          //         });
+          //       } else {
+          //         return "Company does not exist";
+          //       }
+          //     }
+          //   }
 
           return updatedUser;
         } catch (error) {
@@ -824,11 +835,11 @@ const userModel = prisma.$extends({
         const userData: UserData = {
           id: data[0].id,
           username: data[0].username,
-        //   defaultCompanyId: data[0].defaultCompanyId,
+          //   defaultCompanyId: data[0].defaultCompanyId,
           password: "",
           userRole: data[0].userRole,
           userGroup: data[0].userGroup,
-        //   companyUser: data[0].companyUser,
+          //   companyUser: data[0].companyUser,
         };
 
         return userData;
