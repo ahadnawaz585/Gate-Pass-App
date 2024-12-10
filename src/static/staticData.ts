@@ -48,6 +48,9 @@ export const defaultUser: UserData[] = [
 ];
 
 export const features: AppFeature[] = [
+  { name: "login.*", label: "Login" },
+  { name: "login.app.*", label: "Login App", parentFeatureId: "login.*" },
+  { name: "login.admin.*", label: "Login Admin", parentFeatureId: "login.*" },
   { name: "voucher.*", label: "Voucher (Nav)" },
   { name: "voucher.create.*", parentFeatureId: "voucher.*", label: "Create" },
   { name: "voucher.read.*", parentFeatureId: "voucher.*", label: "Read" },

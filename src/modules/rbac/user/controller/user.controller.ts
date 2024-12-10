@@ -10,10 +10,12 @@ import prisma from "../../../../core/models/base.model";
 import { LoggedInTokens } from "../../Token/types/token";
 import accessModel from "../../Access/models/access.model";
 import { secretKey } from "../../../../environment/environment";
+import AccessService from "../../Access/service/access.service";
 
 class UserController extends BaseController<UserService> {
   protected service = new UserService();
   protected tokenService = new BlackListedTokenService();
+  protected accessService = new AccessService();
 
   async getUsers(req: Request, res: Response) {
     let operation = () => this.service.getUsers();
@@ -50,7 +52,6 @@ class UserController extends BaseController<UserService> {
     let errorMessage = "Error retrieving users:";
     this.handleRequest(operation, successMessage, errorMessage, res);
   }
-
 
   async getLoggedInUser(req: Request, res: Response) {
     const userId = AuthHelper.getUserIdFromHeader(req);
@@ -96,7 +97,7 @@ class UserController extends BaseController<UserService> {
   }
 
   async logoutUserOfAllDevices(req: Request, res: Response) {
-    const {id} = req.body;
+    const { id } = req.body;
     let operation = () => this.service.removeLoggedInUser(id, "");
     let successMessage = "logged out of all devices successfully!";
     let errorMessage = "Error logging of all devices ";
@@ -111,13 +112,13 @@ class UserController extends BaseController<UserService> {
     this.handleRequest(operation, successMessage, errorMessage, res);
   }
 
-//   async changeCompany(req: Request, res: Response) {
-//     let { userId, companyId } = req.body;
-//     let operation = () => this.service.changeCompany(userId, companyId);
-//     let successMessage = "changed compnany successfully!";
-//     let errorMessage = "Error changing company:";
-//     this.handleRequest(operation, successMessage, errorMessage, res);
-//   }
+  //   async changeCompany(req: Request, res: Response) {
+  //     let { userId, companyId } = req.body;
+  //     let operation = () => this.service.changeCompany(userId, companyId);
+  //     let successMessage = "changed compnany successfully!";
+  //     let errorMessage = "Error changing company:";
+  //     this.handleRequest(operation, successMessage, errorMessage, res);
+  //   }
 
   async createUser(req: Request, res: Response) {
     let userData: UserData = req.body;
@@ -164,63 +165,82 @@ class UserController extends BaseController<UserService> {
   }
 
   async loginUser(req: Request, res: Response) {
-    let { username, password, rememberMe } = req.body;
+    let { username, password, rememberMe, platform } = req.body;
+    console.log({ username, password, rememberMe, platform });
     let user: User | null = await this.service.getUserByUsername(username);
     const roleIds: string[] = await accessModel.role.getRoleIds(user?.id || "");
-    const isAdmin = roleIds.includes("2d9c89e7-466d-4b1c-b1b3-3ef5be815ed4");
+    // const isAdmin = roleIds.includes("2d9c89e7-466d-4b1c-b1b3-3ef5be815ed4");
     if (!user || !bcrypt.compareSync(password, user.password)) {
       return res.status(401).json({ message: "Invalid username or password" });
     }
 
     const expiresIn = rememberMe ? "6M" : "24h";
-    
-    let token: string | null =jwt.sign(
-        { userId: user.id },
-        secretKey,
-        {
-          expiresIn,
-        }
-      );;
 
-    // if (user.defaultCompanyId) {
-    //   token = jwt.sign(
-    //     { userId: user.id, companyId: user.defaultCompanyId },
-    //     "your_secret_key",
-    //     {
-    //       expiresIn,
-    //     }
-    //   );
-    // } else if (user.id === "58c55d6a-910c-46f8-a422-4604bea6cd15" || isAdmin) {
-    //   token = jwt.sign(
-    //     { userId: user.id, companyId: "a9f53d14-7177-45ef-bf74-f4b8d1a6ce0e" },
-    //     "your_secret_key",
-    //     {
-    //       expiresIn,
-    //     }
-    //   );
-    // } else {
-    //   token = null;
-    // }
+    let isAllowded: boolean = false;
 
-    const data: LoggedInTokens = {
-      userId: user.id || "",
-      token: token,
-      rememberMe: rememberMe,
-    };
-
-    if (token != null) {
-      await prisma.loggedInUsers.gpCreate(data);
+    if (platform == "Mobile") {
+      isAllowded = await this.accessService.checkPermission(
+        user?.id || "",
+        "login.app.*"
+      );
+    } else if (platform == "Admin") {
+      isAllowded = await this.accessService.checkPermission(
+        user?.id || "",
+        "login.admin.*"
+      );
     }
 
-    return res.json({ token });
+
+    if (isAllowded) {
+      let token: string | null = jwt.sign({ userId: user.id }, secretKey, {
+        expiresIn,
+      });
+
+      // if (user.defaultCompanyId) {
+      //   token = jwt.sign(
+      //     { userId: user.id, companyId: user.defaultCompanyId },
+      //     "your_secret_key",
+      //     {
+      //       expiresIn,
+      //     }
+      //   );
+      // } else if (user.id === "58c55d6a-910c-46f8-a422-4604bea6cd15" || isAdmin) {
+      //   token = jwt.sign(
+      //     { userId: user.id, companyId: "a9f53d14-7177-45ef-bf74-f4b8d1a6ce0e" },
+      //     "your_secret_key",
+      //     {
+      //       expiresIn,
+      //     }
+      //   );
+      // } else {
+      //   token = null;
+      // }
+
+      const data: LoggedInTokens = {
+        userId: user.id || "",
+        token: token,
+        rememberMe: rememberMe,
+      };
+
+      if (token != null) {
+        await prisma.loggedInUsers.gpCreate(data);
+      }
+
+      return res.json({ token });
+    } else {
+
+      return res
+        .status(401)
+        .json({ message: "You don't have permission to login ! contact ERP" });
+    }
   }
 
   async logoutUser(req: Request, res: Response) {
     const token = AuthHelper.getTokenFromHeader(req);
-    console.log("token:",token);
+    console.log("token:", token);
     if (token) {
       const userId = AuthHelper.getUserIdFromHeader(req);
-      console.log("user id :",userId);
+      console.log("user id :", userId);
       if (userId && token) {
         await this.service.removeLoggedInUser(userId, token);
       }
