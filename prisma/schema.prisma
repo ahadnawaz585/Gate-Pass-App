@@ -54,9 +54,12 @@ model GatePass {
   createdAt     DateTime?
   updatedAt     DateTime?
   isDeleted     DateTime?
+  issuedAt      DateTime?     @default(now())
+  validUntil    DateTime?      // New column
   items         GatePassItem[]
   customer      Customer       @relation(fields: [customerId], references: [id])
 }
+
 
 model GatePassItem {
   id         String    @id @default(uuid())
