@@ -20,6 +20,7 @@ import UserGroupRoutes from "../../modules/rbac/group/routes/userGroup.routes";
 import AppFeatureRoutes from "../../modules/rbac/Features/routes/feature.routes";
 import UserRoleRoutes from "../../modules/rbac/user/routes/userRole.routes";
 import FeaturePermissionRoutes from "../../modules/rbac/Features/routes/featurePermission.routes";
+import TokenCleanHelper from '../../helper/schedule.helper';
 
 class App {
   private app: Express;
@@ -32,6 +33,7 @@ class App {
     this.initializeMiddleware();
     this.initializeRoutes();
     this.startServer();
+    TokenCleanHelper;
   }
 
   private accessControl() {

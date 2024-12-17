@@ -190,7 +190,7 @@ class UserController extends BaseController<UserService> {
       );
     }
 
-
+  console.log(isAllowded);
     if (isAllowded) {
       let token: string | null = jwt.sign({ userId: user.id }, secretKey, {
         expiresIn,
