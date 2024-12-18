@@ -316,41 +316,41 @@ WHERE "User".id = ${id}
           return { data, totalSize };
         }
 
-        const accessCondition = {
-          OR: [
-            {
-              readAccess: {
-                equals: Prisma.DbNull,
-              },
-            },
+        // const accessCondition = {
+        //   OR: [
+        //     {
+        //       readAccess: {
+        //         equals: Prisma.DbNull,
+        //       },
+        //     },
 
-            {
-              readAccess: {
-                path: ["user"],
-                array_contains: userId,
-              },
-            },
-            {
-              OR: roleIds.map((roleId) => ({
-                readAccess: {
-                  path: ["role"],
-                  array_contains: roleId,
-                },
-              })),
-            },
-            {
-              OR: groupIds.map((groupId) => ({
-                readAccess: {
-                  path: ["group"],
-                  array_contains: groupId,
-                },
-              })),
-            },
-          ],
-        };
+        //     {
+        //       readAccess: {
+        //         path: ["user"],
+        //         array_contains: userId,
+        //       },
+        //     },
+        //     {
+        //       OR: roleIds.map((roleId) => ({
+        //         readAccess: {
+        //           path: ["role"],
+        //           array_contains: roleId,
+        //         },
+        //       })),
+        //     },
+        //     {
+        //       OR: groupIds.map((groupId) => ({
+        //         readAccess: {
+        //           path: ["group"],
+        //           array_contains: groupId,
+        //         },
+        //       })),
+        //     },
+        //   ],
+        // };
 
         const combinedCondition = {
-          AND: [{ isDeleted: null }, accessCondition],
+          AND: [{ isDeleted: null }],
         };
 
         // if (companyId) {

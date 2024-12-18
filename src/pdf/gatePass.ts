@@ -1,17 +1,30 @@
-import fs from "fs";
+import fs, { cpSync } from "fs";
 import pdfMake from "pdfmake/build/pdfmake";
-import pdfFonts from "pdfmake/build/vfs_fonts";
 import { TDocumentDefinitions } from "pdfmake/interfaces";
 import { DetailedGatePass, Item } from "../types/paginatedData";
 import { formatDate } from "../helper/date.helper";
-
+import { fonts } from "./config/pdf-fonts";
+const pdfFonts = require('./config/custom-fonts');
+// import * from "../assets/images/Power-Highway-Logo.png"
 // pdfMake.vfs = pdfFonts.pdfMake.vfs;
+// import pdfMake from "pdfmake/build/pdfmake";
+// import pdfFonts from "pdfmake/build/vfs_fonts";
+(pdfMake as any).vfs = pdfFonts.pdfMake.vfs;
 
 export class GatePassPDF {
+
+  constructor() {
+    (pdfMake as any).fonts = fonts;
+  }
+  
   public generateGatePassPDF(data: DetailedGatePass): any {
+
+
+    
     const powerHighwayLogo = "./src/assets/images/Power-Highway-Logo.png";
     const powerHighwayLogoBuffer = fs.readFileSync(powerHighwayLogo);
     const PowerHighwayImageDataURL = `data:image/png;base64,${powerHighwayLogoBuffer.toString("base64")}`;
+    // console.log(PowerHighwayImageDataURL);
 
     const details: any[] = [];
 
@@ -213,3 +226,7 @@ export class GatePassPDF {
 }
 
 }
+function constructer() {
+  throw new Error("Function not implemented.");
+}
+
