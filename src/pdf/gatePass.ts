@@ -21,7 +21,7 @@ export class GatePassPDF {
 
 
     
-    const powerHighwayLogo = "./src/assets/images/Power-Highway-Logo.png";
+    const powerHighwayLogo = "./src/assets/i  mages/Power-Highway-Logo.png";
     const powerHighwayLogoBuffer = fs.readFileSync(powerHighwayLogo);
     const PowerHighwayImageDataURL = `data:image/png;base64,${powerHighwayLogoBuffer.toString("base64")}`;
     // console.log(PowerHighwayImageDataURL);

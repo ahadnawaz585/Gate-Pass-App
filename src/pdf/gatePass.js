@@ -19,7 +19,7 @@ class GatePassPDF {
         pdfmake_1.default.fonts = pdf_fonts_1.fonts;
     }
     generateGatePassPDF(data) {
-        const powerHighwayLogo = "./src/assets/images/Power-Highway-Logo.png";
+        const powerHighwayLogo = "./src/assets/i  mages/Power-Highway-Logo.png";
         const powerHighwayLogoBuffer = fs_1.default.readFileSync(powerHighwayLogo);
         const PowerHighwayImageDataURL = `data:image/png;base64,${powerHighwayLogoBuffer.toString("base64")}`;
         // console.log(PowerHighwayImageDataURL);
