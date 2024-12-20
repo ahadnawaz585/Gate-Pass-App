@@ -54,12 +54,11 @@ model GatePass {
   createdAt     DateTime?
   updatedAt     DateTime?
   isDeleted     DateTime?
-  issuedAt      DateTime?     @default(now())
-  validUntil    DateTime?      // New column
+  issuedAt      DateTime?      @default(now())
+  validUntil    DateTime? // New column
   items         GatePassItem[]
   customer      Customer       @relation(fields: [customerId], references: [id])
 }
-
 
 model GatePassItem {
   id         String    @id @default(uuid())
@@ -86,6 +85,8 @@ model User {
   blacklistTokens BlacklistToken[]
   loggedInUsers   LoggedInUsers[]
   userRoles       UserRole[]
+  employee        Employee?        @relation(fields: [employeeId], references: [id])
+  employeeId      String?          @unique
 }
 
 model Group {
@@ -196,4 +197,98 @@ model LoggedInUsers {
   rememberMe Boolean
   createdAt  DateTime?
   user       User      @relation(fields: [userId], references: [id])
+}
+
+model Employee {
+  id          String    @id @default(uuid()) @db.VarChar(36)
+  name        String
+  surname     String
+  address     String
+  joiningDate DateTime
+  bloodGroup  String
+  company     Company
+  imagePath   String?
+  code        String    @unique
+  createdAt   DateTime?
+  updatedAt   DateTime?
+  isDeleted   DateTime?
+
+  user          User?
+  attendances   Attendance[]
+  leaveRequests LeaveRequest[]
+
+  LeaveAllocation LeaveAllocation[]
+}
+
+enum Company {
+  SOLARMAX
+  POWERHIGHWAY
+  OKASHASMART
+}
+
+model Attendance {
+  id         String           @id @default(uuid()) @db.VarChar(36)
+  employee   Employee         @relation(fields: [employeeId], references: [id])
+  employeeId String
+  date       DateTime
+  status     AttendanceStatus
+  checkIn    DateTime?
+  checkOut   DateTime?
+  location   String?
+  createdAt  DateTime?
+  updatedAt  DateTime?
+  isDeleted  DateTime?
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  ON_LEAVE
+}
+
+model LeaveRequest {
+  id         String      @id @default(uuid()) @db.VarChar(36)
+  employee   Employee    @relation(fields: [employeeId], references: [id])
+  employeeId String
+  reason     String?
+  startDate  DateTime
+  endDate    DateTime
+  status     LeaveStatus @default(PENDING)
+  imagePath  String? // Optional attachment
+  location   String? // Optional location for leave request
+  createdAt  DateTime?
+  updatedAt  DateTime?
+  isDeleted  DateTime?
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model LeaveConfiguration {
+  id          String    @id @default(uuid()) @db.VarChar(36)
+  name        String    @unique
+  description String?
+  maxDays     Int
+  createdAt   DateTime?
+  updatedAt   DateTime?
+  isDeleted   DateTime?
+
+  employees LeaveAllocation[]
+}
+
+model LeaveAllocation {
+  id            String              @id @default(uuid()) @db.VarChar(36)
+  employee      Employee            @relation(fields: [employeeId], references: [id])
+  employeeId    String
+  leaveConfig   LeaveConfiguration? @relation(fields: [leaveConfigId], references: [id])
+  leaveConfigId String?
+  assignedDays  Int
+  note          String?
+  createdAt     DateTime?
+  updatedAt     DateTime?
+  isDeleted     DateTime?
 }
