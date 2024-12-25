@@ -204,10 +204,18 @@ model Employee {
   name        String
   surname     String
   address     String
+  dob         DateTime
   joiningDate DateTime
   bloodGroup  String
+  contactNo   String
+  designation String
+  department  String
+  martialStatus String
+  noOfChildrens Int?
+  filePaths        String[]  @default([])
+
   company     Company
-  imagePath   String?
+  image       String?
   code        String    @unique
   createdAt   DateTime?
   updatedAt   DateTime?
@@ -225,6 +233,7 @@ enum Company {
   POWERHIGHWAY
   OKASHASMART
 }
+
 
 model Attendance {
   id         String           @id @default(uuid()) @db.VarChar(36)
@@ -255,7 +264,7 @@ model LeaveRequest {
   startDate  DateTime
   endDate    DateTime
   status     LeaveStatus @default(PENDING)
-  imagePath  String? // Optional attachment
+  image      String? // Optional attachment
   location   String? // Optional location for leave request
   createdAt  DateTime?
   updatedAt  DateTime?

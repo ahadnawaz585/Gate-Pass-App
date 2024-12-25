@@ -1,18 +1,18 @@
 import { UserData } from "../modules/rbac/user/types/user";
 export const tableNames = [
-  "GroupRole",
-  "UserRole",
-  "UserGroup",
+  // "GroupRole",
+  // "UserRole",
+  // "UserGroup",
   "BlacklistToken",
   "LoggedInUsers",
   // "GatePassItem",
   // "GatePass",
   // "Item",
   // "Customer",
-  "Group",
+  // "Group",
   "AppFeature",
-  "Role",
-  "User",
+  // "Role",
+  // "User",
 ];
 import { AppFeature } from "../modules/rbac/Features/types/feature";
 export const defaultUser: UserData[] = [

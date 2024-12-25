@@ -37,6 +37,14 @@ class UserController extends base_controller_1.default {
             this.handleRequest(operation, successMessage, errorMessage, res);
         });
     }
+    getNonAssociatedUsers(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let operation = () => this.service.getNonAssociatedUsers();
+            let successMessage = "User  retrieved successfully!";
+            let errorMessage = "Error retrieving users:";
+            this.handleRequest(operation, successMessage, errorMessage, res);
+        });
+    }
     getAllUsers(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
             const id = auth_helper_1.default.getUserIdFromHeader(req);

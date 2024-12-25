@@ -6,6 +6,7 @@ class UserRoleService {
     return await UserRoleModel.userRole.gpFindMany();
   }
 
+
   async createUserRole(
     userRoleData: UserRole | UserRole[]
   ): Promise<UserRole | UserRole[]> {

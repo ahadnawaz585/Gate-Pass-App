@@ -25,6 +25,8 @@ class UserRoleController extends BaseController<UserRoleService> {
     // }
   }
 
+
+
   async getUserRoleByUserId(req: Request, res: Response) {
     let { id } = req.body;
     let operation = () => this.service.getByUserId(id);

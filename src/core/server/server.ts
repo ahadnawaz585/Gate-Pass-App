@@ -21,6 +21,7 @@ import AppFeatureRoutes from "../../modules/rbac/Features/routes/feature.routes"
 import UserRoleRoutes from "../../modules/rbac/user/routes/userRole.routes";
 import FeaturePermissionRoutes from "../../modules/rbac/Features/routes/featurePermission.routes";
 import TokenCleanHelper from '../../helper/schedule.helper';
+import EmployeeRoutes from "../../modules/AMS/Employee/routes/employee.routes";
 
 class App {
   private app: Express;
@@ -49,9 +50,9 @@ class App {
   }
 
   private initializeMiddleware() {
-    this.app.use(bodyParser.json());
-    this.app.use(bodyParser.urlencoded({ extended: true }));
-    this.app.use('/uploads', express.static(path.join(__dirname, 'src', 'assets', 'uploads')));
+    this.app.use(bodyParser.json({ limit: '50mb' }));;
+    this.app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+    this.app.use('/uploads', express.static(path.join(__dirname, '..','..',  'assets', 'uploads')));
   }
 
   private initializeRoutes(): void {
@@ -72,7 +73,10 @@ class App {
       FeaturePermissionRoutes,
       AccessRoutes,
       UserGroupRoutes,
-      AppFeatureRoutes
+      AppFeatureRoutes,
+
+      //AMS
+      EmployeeRoutes
     ];
     
     const openRoutes: any[] = [AuthRoutes];
@@ -91,6 +95,7 @@ class App {
   private async startServer(): Promise<void> {
     const port = process.env.PORT || 3001;
     this.app.listen(port, () => {
+      console.log(`path:${path.join(__dirname, '..','..',  'assets', 'uploads')}`);
       console.log(`Server is running on port ${port}`);
     });
   }

@@ -24,6 +24,13 @@ class UserController extends BaseController<UserService> {
     this.handleRequest(operation, successMessage, errorMessage, res);
   }
 
+  async getNonAssociatedUsers(req:Request,res:Response){
+    let operation = () => this.service.getNonAssociatedUsers();
+    let successMessage = "User  retrieved successfully!";
+    let errorMessage = "Error retrieving users:";
+    this.handleRequest(operation, successMessage, errorMessage, res);
+  }
+
   async getAllUsers(req: Request, res: Response) {
     const id = AuthHelper.getUserIdFromHeader(req);
     if (id) {

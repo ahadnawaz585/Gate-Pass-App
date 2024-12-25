@@ -387,6 +387,21 @@ WHERE "User".id = ${id}
                     return { data, totalSize };
                 });
             },
+            gpNonAssociatedUsers() {
+                return __awaiter(this, void 0, void 0, function* () {
+                    const excludedId = "58c55d6a-910c-46f8-a422-4604bea6cd15";
+                    const data = base_model_1.default.user.findMany({
+                        where: {
+                            isDeleted: null,
+                            employeeId: null,
+                            id: {
+                                not: excludedId,
+                            },
+                        },
+                    });
+                    return data;
+                });
+            },
             gpSearch(searchTerm_1, columns_1) {
                 return __awaiter(this, arguments, void 0, function* (searchTerm, columns, pageNumber = 1, pageSize = 10
                 // userId: string

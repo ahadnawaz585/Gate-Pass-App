@@ -233,8 +233,7 @@ const userModel = prisma.$extends({
         if (id === "58c55d6a-910c-46f8-a422-4604bea6cd15") {
           return null;
         }
-        const data: UserData[] =
-          await prisma.$queryRaw(Prisma.sql`SELECT 
+        const data: UserData[] = await prisma.$queryRaw(Prisma.sql`SELECT 
     "User".username,
     ARRAY(
         SELECT DISTINCT "R"."name" 
@@ -409,6 +408,20 @@ WHERE "User".id = ${id}
         return { data, totalSize };
       },
 
+      async gpNonAssociatedUsers() {
+        const excludedId = "58c55d6a-910c-46f8-a422-4604bea6cd15";
+        const data = prisma.user.findMany({
+          where: {
+            isDeleted: null,
+            employeeId: null,
+            id: {
+              not: excludedId,
+            },
+          },
+        });
+
+        return data;
+      },
       async gpSearch(
         this: any,
         searchTerm: string | string[],

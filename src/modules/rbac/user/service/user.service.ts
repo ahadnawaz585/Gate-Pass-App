@@ -7,6 +7,11 @@ class UserService {
     return await userModel.user.gpFindMany();
   }
 
+  
+  async getNonAssociatedUsers(){
+return await userModel.user.gpNonAssociatedUsers();
+  }
+
   async getAllUsers(
     page: number,
     pageSize: number,

@@ -34,6 +34,7 @@ const feature_routes_1 = __importDefault(require("../../modules/rbac/Features/ro
 const userRole_routes_1 = __importDefault(require("../../modules/rbac/user/routes/userRole.routes"));
 const featurePermission_routes_1 = __importDefault(require("../../modules/rbac/Features/routes/featurePermission.routes"));
 const schedule_helper_1 = __importDefault(require("../../helper/schedule.helper"));
+const employee_routes_1 = __importDefault(require("../../modules/AMS/Employee/routes/employee.routes"));
 class App {
     constructor() {
         this.app = (0, express_1.default)();
@@ -55,9 +56,10 @@ class App {
         });
     }
     initializeMiddleware() {
-        this.app.use(body_parser_1.default.json());
-        this.app.use(body_parser_1.default.urlencoded({ extended: true }));
-        this.app.use('/uploads', express_1.default.static(path_1.default.join(__dirname, 'src', 'assets', 'uploads')));
+        this.app.use(body_parser_1.default.json({ limit: '50mb' }));
+        ;
+        this.app.use(body_parser_1.default.urlencoded({ limit: '50mb', extended: true }));
+        this.app.use('/uploads', express_1.default.static(path_1.default.join(__dirname, '..', '..', 'assets', 'uploads')));
     }
     initializeRoutes() {
         const routes = [
@@ -76,7 +78,9 @@ class App {
             featurePermission_routes_1.default,
             access_routes_1.default,
             userGroup_routes_1.default,
-            feature_routes_1.default
+            feature_routes_1.default,
+            //AMS
+            employee_routes_1.default
         ];
         const openRoutes = [auth_routes_1.default];
         this.app.get("/", (req, res) => {
@@ -91,6 +95,7 @@ class App {
         return __awaiter(this, void 0, void 0, function* () {
             const port = process.env.PORT || 3001;
             this.app.listen(port, () => {
+                console.log(`path:${path_1.default.join(__dirname, '..', '..', 'assets', 'uploads')}`);
                 console.log(`Server is running on port ${port}`);
             });
         });

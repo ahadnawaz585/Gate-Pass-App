@@ -2,19 +2,19 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.features = exports.defaultUser = exports.tableNames = void 0;
 exports.tableNames = [
-    "GroupRole",
-    "UserRole",
-    "UserGroup",
+    // "GroupRole",
+    // "UserRole",
+    // "UserGroup",
     "BlacklistToken",
     "LoggedInUsers",
     // "GatePassItem",
     // "GatePass",
     // "Item",
     // "Customer",
-    "Group",
+    // "Group",
     "AppFeature",
-    "Role",
-    "User",
+    // "Role",
+    // "User",
 ];
 exports.defaultUser = [
     // {

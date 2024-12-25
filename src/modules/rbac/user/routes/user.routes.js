@@ -12,8 +12,9 @@ class UserRoutes {
         this.initializeRoutes();
     }
     initializeRoutes() {
-        this.router.get('/get', this.controller.getUsers.bind(this.controller));
         this.router.post('/get', this.controller.getAllUsers.bind(this.controller));
+        this.router.get('/getNonAssociatedUsers', this.controller.getNonAssociatedUsers.bind(this.controller));
+        this.router.get('/get', this.controller.getUsers.bind(this.controller));
         this.router.post('/search', this.controller.searchUsers.bind(this.controller));
         this.router.post('/getById', this.controller.getUserById.bind(this.controller));
         this.router.get('/getLoggedInUser', this.controller.getLoggedInUser.bind(this.controller));

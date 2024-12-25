@@ -19,6 +19,11 @@ class UserService {
             return yield user_model_1.default.user.gpFindMany();
         });
     }
+    getNonAssociatedUsers() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield user_model_1.default.user.gpNonAssociatedUsers();
+        });
+    }
     getAllUsers(page, pageSize, userId) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield user_model_1.default.user.gpPgFindMany(page, pageSize, userId);
