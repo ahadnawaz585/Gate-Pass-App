@@ -125,7 +125,13 @@ const employeeModel = prisma.$extends({
           return finalData;
         }
 
-        return user;
+        const finalData = {
+          ...data,
+          userId:null,
+          username: null,
+        };
+
+        return finalData;
       },
       async gpUpdate(updateId: string, data: any) {
         const { userId, ...remainingData } = data;
