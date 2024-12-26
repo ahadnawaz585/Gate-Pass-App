@@ -3,8 +3,10 @@ import BaseController from "../../../../core/controllers/base.controller";
 import EmployeeService from "../services/employee.service";
 import { Employee } from "../types/employee";
 import path from "path";
+import { EmployeePDF } from "../../../../pdf/employee";
 class EmployeeController extends BaseController<EmployeeService> {
   protected service = new EmployeeService();
+  private pdfUtility:EmployeePDF = new EmployeePDF();
 
   async getAllEmployees(req: Request, res: Response) {
     const operation = () => this.service.getAllEmployees();
@@ -30,6 +32,34 @@ class EmployeeController extends BaseController<EmployeeService> {
     await this.handleRequest(operation, successMessage, errorMessage, res);
   }
 
+  async getEmployeeCard(req: Request, res: Response){
+    const { id } = req.body;
+      try {
+          const data: Employee|null = await this.service.getEmployeeById(id);
+          if(data){
+          const pdfDoc = this.pdfUtility.generateEmployeePDF(data);
+    
+          pdfDoc.getBuffer((buffer: Buffer) => {
+            if (buffer) {
+              res.writeHead(200, {
+                "Content-Type": "application/pdf",
+                "Content-Disposition": `attachment; filename=${encodeURIComponent(
+                  data.name
+                )}.pdf`,
+                "Content-Length": buffer.length,
+              });
+              res.end(buffer);
+            } else {
+              res.status(500).json({ error: "Error generating PDF buffer" });
+            }
+          })
+          };
+        } catch (error) {
+          console.error("Error generating PDF:", error);
+          res.status(500).json({ error: "Internal Server Error" });
+        }
+  }
+  
   async getFiles(req: Request, res: Response) {
     const { employeeId } = req.body;
 
