@@ -9,19 +9,20 @@ const employeeModel = prisma.$extends({
       async gpSoftDelete(id: string) {
         await prisma.employee.gpSoftDelete(id);
 
-        const user =await prisma.user.findUnique({
-          where:{
-            isDeleted:null, 
-            employeeId:id
-          }
-        })
-
-        await prisma.user.update({
-          where: { id: user?.id },
-          data: { employeeId: null }, // Remove the employee association
+        const user = await prisma.user.findUnique({
+          where: {
+            isDeleted: null,
+            employeeId: id,
+          },
         });
 
+        
+        if (user) {
+          const newUser = { ...user, employeeId: null };
+          await prisma.user.gpUpdate(user?.id, newUser);
+        }
       },
+
       async updateFilePaths(employeeId: string, filePaths: string[]) {
         try {
           await prisma.employee.update({
@@ -127,7 +128,7 @@ const employeeModel = prisma.$extends({
 
         const finalData = {
           ...data,
-          userId:null,
+          userId: null,
           username: null,
         };
 
