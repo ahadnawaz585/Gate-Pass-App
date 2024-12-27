@@ -4,9 +4,11 @@ import EmployeeService from "../services/employee.service";
 import { Employee } from "../types/employee";
 import path from "path";
 import { EmployeePDF } from "../../../../pdf/employee";
+import { EmployeeExcelUtility } from "../../../../excel/employee";
 class EmployeeController extends BaseController<EmployeeService> {
   protected service = new EmployeeService();
-  private pdfUtility:EmployeePDF = new EmployeePDF();
+  private pdfUtility: EmployeePDF = new EmployeePDF();
+  private excelUtility = new EmployeeExcelUtility();
 
   async getAllEmployees(req: Request, res: Response) {
     const operation = () => this.service.getAllEmployees();
@@ -32,34 +34,45 @@ class EmployeeController extends BaseController<EmployeeService> {
     await this.handleRequest(operation, successMessage, errorMessage, res);
   }
 
-  async getEmployeeCard(req: Request, res: Response){
+  async getEmployeeExcel(req: Request, res: Response): Promise<void> {
+    const data = await this.service.getAllEmployees();
+    const result = await this.excelUtility.create(data);
+
+    res.setHeader('Content-Disposition', `attachment; filename="${result.fileName}"`);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.send(result.wbout); // Ensure this is binary data (e.g., a Buffer or equivalent)
+}
+
+
+
+  async getEmployeeCard(req: Request, res: Response) {
     const { id } = req.body;
-      try {
-          const data: Employee|null = await this.service.getEmployeeById(id);
-          if(data){
-          const pdfDoc = this.pdfUtility.generateEmployeePDF(data);
-    
-          pdfDoc.getBuffer((buffer: Buffer) => {
-            if (buffer) {
-              res.writeHead(200, {
-                "Content-Type": "application/pdf",
-                "Content-Disposition": `attachment; filename=${encodeURIComponent(
-                  data.name
-                )}.pdf`,
-                "Content-Length": buffer.length,
-              });
-              res.end(buffer);
-            } else {
-              res.status(500).json({ error: "Error generating PDF buffer" });
-            }
-          })
-          };
-        } catch (error) {
-          console.error("Error generating PDF:", error);
-          res.status(500).json({ error: "Internal Server Error" });
-        }
+    try {
+      const data: Employee | null = await this.service.getEmployeeById(id);
+      if (data) {
+        const pdfDoc = this.pdfUtility.generateEmployeePDF(data);
+
+        pdfDoc.getBuffer((buffer: Buffer) => {
+          if (buffer) {
+            res.writeHead(200, {
+              "Content-Type": "application/pdf",
+              "Content-Disposition": `attachment; filename=${encodeURIComponent(
+                data.name
+              )}.pdf`,
+              "Content-Length": buffer.length,
+            });
+            res.end(buffer);
+          } else {
+            res.status(500).json({ error: "Error generating PDF buffer" });
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
   }
-  
+
   async getFiles(req: Request, res: Response) {
     const { employeeId } = req.body;
 
@@ -86,9 +99,9 @@ class EmployeeController extends BaseController<EmployeeService> {
     }
 
     try {
-      let files:any = req.files as Express.Multer.File[]; // Array of uploaded files
+      let files: any = req.files as Express.Multer.File[]; // Array of uploaded files
       // console.log(files.files);
-      files= files.files
+      files = files.files;
       if (!files || files.length === 0) {
         return res.status(400).json({ message: "No files uploaded" });
       }
@@ -102,10 +115,10 @@ class EmployeeController extends BaseController<EmployeeService> {
       const existingFilePaths = employee.filePaths || [];
 
       // Create new file paths
-      const newFilePaths = files.map((file:any) => {
+      const newFilePaths = files.map((file: any) => {
         // Extract the relative path for the structured folder
         const relativePath = path.relative(
-          path.join(__dirname, "..","..", "..", "..", "assets"),
+          path.join(__dirname, "..", "..", "..", "..", "assets"),
           file.path
         );
 

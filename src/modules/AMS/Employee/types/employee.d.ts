@@ -7,6 +7,7 @@ export interface Employee {
   bloodGroup: string;
   dob: Date;
   contactNo: string;
+  emergencyContactNo?: string;
   designation: string;
   department: string;
   maritalStatus: string; // Updated for proper naming convention
