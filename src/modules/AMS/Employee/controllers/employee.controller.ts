@@ -32,6 +32,16 @@ class EmployeeController extends BaseController<EmployeeService> {
     await this.handleRequest(operation, successMessage, errorMessage, res);
   }
 
+
+  async getEmployeeExcel(req:Request,res:Response){
+    const data =  this.service.getAllEmployees();
+    // const result = await new excelUtility.create(data); // Await the promise
+
+    // Set the headers
+    // res.setHeader('Content-Type', `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;filename="${result.fileName}"`);
+    // res.send(result.wbout); 
+  }
+
   async getEmployeeCard(req: Request, res: Response){
     const { id } = req.body;
       try {
