@@ -32,7 +32,8 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
     "node-schedule": "^2.1.1",
-    "pdfmake": "^0.2.15"
+    "pdfmake": "^0.2.15",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
