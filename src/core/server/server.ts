@@ -21,7 +21,11 @@ import AppFeatureRoutes from "../../modules/rbac/Features/routes/feature.routes"
 import UserRoleRoutes from "../../modules/rbac/user/routes/userRole.routes";
 import FeaturePermissionRoutes from "../../modules/rbac/Features/routes/featurePermission.routes";
 import TokenCleanHelper from '../../helper/schedule.helper';
+
+//AMS
+
 import EmployeeRoutes from "../../modules/AMS/Employee/routes/employee.routes";
+import AttendanceRoutes from "../../modules/AMS/Attendance/routes/attendance.routes";
 
 class App {
   private app: Express;
@@ -76,7 +80,8 @@ class App {
       AppFeatureRoutes,
 
       //AMS
-      EmployeeRoutes
+      EmployeeRoutes,
+      AttendanceRoutes
     ];
     
     const openRoutes: any[] = [AuthRoutes];

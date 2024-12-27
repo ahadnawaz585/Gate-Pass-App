@@ -34,7 +34,9 @@ const feature_routes_1 = __importDefault(require("../../modules/rbac/Features/ro
 const userRole_routes_1 = __importDefault(require("../../modules/rbac/user/routes/userRole.routes"));
 const featurePermission_routes_1 = __importDefault(require("../../modules/rbac/Features/routes/featurePermission.routes"));
 const schedule_helper_1 = __importDefault(require("../../helper/schedule.helper"));
+//AMS
 const employee_routes_1 = __importDefault(require("../../modules/AMS/Employee/routes/employee.routes"));
+const attendance_routes_1 = __importDefault(require("../../modules/AMS/Attendance/routes/attendance.routes"));
 class App {
     constructor() {
         this.app = (0, express_1.default)();
@@ -80,7 +82,8 @@ class App {
             userGroup_routes_1.default,
             feature_routes_1.default,
             //AMS
-            employee_routes_1.default
+            employee_routes_1.default,
+            attendance_routes_1.default
         ];
         const openRoutes = [auth_routes_1.default];
         this.app.get("/", (req, res) => {
