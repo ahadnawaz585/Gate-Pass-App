@@ -3,7 +3,7 @@ import { Attendance } from "../types/Attendance";
 import { paginatedData } from "../../../../types/paginatedData";
 
 class AttendanceService {
-  async getAllattendances(): Promise<Attendance[]> {
+  async getAllattendances() {
     return await attendanceModel.attendance.gpFindMany();
   }
 
