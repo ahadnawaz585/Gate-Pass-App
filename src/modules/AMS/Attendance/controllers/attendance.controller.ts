@@ -55,6 +55,36 @@ class AttendanceController extends BaseController<AttendanceService> {
     this.handleRequest(operation, successMessage, errorMessage, res);
   }
 
+  async checkAttendance(req: Request, res: Response) {
+    const { employeeId ,status} = req.body;
+    try {
+    const result = await this.service.checkAttendance(employeeId,status);
+    return res
+      .status(201)
+      .json({ message: result.message, success:result.success });
+  } catch (error) {
+    console.error("Error creating attendance:", error);
+    return res.status(500).json({ message: "Error creating attendance." });
+  }
+  }
+
+  async markAttendance(req: Request, res: Response) {
+    const attendanceData: Attendance = req.body;
+
+    try {
+      const result = await this.service.markAttendance(attendanceData);
+      if (!result.success) {
+        return res.status(400).json({ message: result.message });
+      }
+      return res
+        .status(201)
+        .json({ message: result.message, data: result.data });
+    } catch (error) {
+      console.error("Error creating attendance:", error);
+      return res.status(500).json({ message: "Error creating attendance." });
+    }
+  }
+
   async updateAttendance(req: Request, res: Response) {
     const { id, data } = req.body;
     const operation = () => this.service.updateAttendance(id, data);
@@ -86,7 +116,6 @@ class AttendanceController extends BaseController<AttendanceService> {
     const errorMessage = "Error restoring Attendance:";
     this.handleRequest(operation, successMessage, errorMessage, res);
   }
-  
 }
 
 export default AttendanceController;

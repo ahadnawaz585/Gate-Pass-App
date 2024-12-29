@@ -17,6 +17,8 @@ class AttendanceRoutes {
     this.router.get('/total', this.controller.getTotalAttendances.bind(this.controller));
     this.router.post('/getById', this.controller.getAttendanceById.bind(this.controller));
     this.router.post('/create', this.controller.createAttendance.bind(this.controller));
+    this.router.post('/checkAttendance', this.controller.checkAttendance.bind(this.controller));
+    this.router.post('/markAttendance', this.controller.markAttendance.bind(this.controller));
     this.router.put('/update', this.controller.updateAttendance.bind(this.controller));
     this.router.post('/restore', this.controller.restoreAttendance.bind(this.controller));
     this.router.post('/delete', this.controller.deleteAttendance.bind(this.controller));
