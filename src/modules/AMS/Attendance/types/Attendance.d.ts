@@ -1,6 +1,6 @@
 export interface Attendance {
-    id: string;
-    employee: Employee;
+    id?: string;
+    employee?: Employee;
     employeeId: string;
     date: Date;
     status: AttendanceStatus;

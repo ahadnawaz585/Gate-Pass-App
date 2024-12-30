@@ -200,28 +200,28 @@ model LoggedInUsers {
 }
 
 model Employee {
-  id          String    @id @default(uuid()) @db.VarChar(36)
-  name        String
-  surname     String
-  address     String
-  dob         DateTime
-  cnic        String    @default("")
-  joiningDate DateTime
-  bloodGroup  String
-  contactNo   String
-  emergencyContactNo   String?
-  designation String
-  department  String
-  martialStatus String
-  noOfChildrens Int?
-  filePaths        String[]  @default([])
+  id                 String   @id @default(uuid()) @db.VarChar(36)
+  name               String
+  surname            String
+  address            String
+  dob                DateTime
+  cnic               String   @default("")
+  joiningDate        DateTime
+  bloodGroup         String
+  contactNo          String
+  emergencyContactNo String?
+  designation        String
+  department         String
+  martialStatus      String
+  noOfChildrens      Int?
+  filePaths          String[] @default([])
 
-  company     Company
-  image       String?
-  code        String    @unique
-  createdAt   DateTime?
-  updatedAt   DateTime?
-  isDeleted   DateTime?
+  company   Company
+  image     String?
+  code      String    @unique
+  createdAt DateTime?
+  updatedAt DateTime?
+  isDeleted DateTime?
 
   user          User?
   attendances   Attendance[]
@@ -235,7 +235,6 @@ enum Company {
   POWERHIGHWAY
   OKASHASMART
 }
-
 
 model Attendance {
   id         String           @id @default(uuid()) @db.VarChar(36)
@@ -302,4 +301,28 @@ model LeaveAllocation {
   createdAt     DateTime?
   updatedAt     DateTime?
   isDeleted     DateTime?
+}
+
+enum ScheduleParent {
+  LEAVE
+  ABSENT
+  CHECK_OUT
+}
+
+enum ScheduleStatus {
+  SUCCESS
+  FAIL
+  SKIP
+}
+
+model AttendanceScheduler {
+  id        String         @id @default(uuid()) @db.VarChar(36)
+  parent    ScheduleParent
+  runTime   DateTime
+  status    ScheduleStatus
+  employeeIds String[]
+  log       String?
+  createdAt DateTime?
+  updatedAt DateTime?
+  isDeleted DateTime?
 }

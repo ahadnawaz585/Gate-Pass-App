@@ -3,10 +3,13 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import CustomerRoutes from "../../modules/app/customer/routes/customer.routes";
 const cookieParser = require("cookie-parser");
+
+
 import GatePassRoutes from "../../modules/app/gatePass/routes/gatePass.routes";
 import GatePassItemRoutes from "../../modules/app/gatePassItem/routes/gatePassItem.routes";
 import ItemRoutes from "../../modules/app/item/routes/item.routes";
 import AuthRoutes from "../../Auth/routes/auth.routes";
+
 import path from "path";
 
 // import UserDataRoutes from "../../modules/rbac/user/routes/userData.routes";
@@ -23,7 +26,7 @@ import FeaturePermissionRoutes from "../../modules/rbac/Features/routes/featureP
 import TokenCleanHelper from '../../helper/schedule.helper';
 
 //AMS
-
+import AttendanceSchedulerHelper from "../../modules/AMS/Attendance/schedule/schedule.helper"
 import EmployeeRoutes from "../../modules/AMS/Employee/routes/employee.routes";
 import AttendanceRoutes from "../../modules/AMS/Attendance/routes/attendance.routes";
 
@@ -39,6 +42,7 @@ class App {
     this.initializeRoutes();
     this.startServer();
     TokenCleanHelper;
+    AttendanceSchedulerHelper;
   }
 
   private accessControl() {
