@@ -96,7 +96,7 @@ class AttendanceSchedulerHelper {
       const absentsMarked =
        await this.attendanceSchedulerService.isTodaysAttendanceMarked();
       if (!absentsMarked) {
-        if (hour === 6 && minutes >= 2) {
+        if (hour === 11 && minutes >= 55) {
           console.log(
             "Running cleanup during the last 10 minutes of the day..."
           );
