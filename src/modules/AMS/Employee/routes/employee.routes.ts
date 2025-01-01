@@ -57,6 +57,7 @@ class EmployeeRoutes {
     this.router.post('/search', this.controller.searchEmployees.bind(this.controller));
     this.router.post('/delete', this.controller.deleteEmployee.bind(this.controller));
     this.router.post('/getById', this.controller.getEmployeeById.bind(this.controller));
+    this.router.post('/getByCode', this.controller.getEmployeeByCode.bind(this.controller));
     this.router.post('/restore', this.controller.restoreEmployee.bind(this.controller));
     this.router.post('/updateFile',   this.upload.fields([
       { name: 'employeeId', maxCount: 1 },

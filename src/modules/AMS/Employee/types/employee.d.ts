@@ -11,8 +11,8 @@ export interface Employee {
   emergencyContactNo?: string;
   designation: string;
   department: string;
-  maritalStatus: string; // Updated for proper naming convention
-  noOfChildren?: number; // Updated to match the optional field
+  martialStatus: string; // Updated for proper naming convention
+  noOfChildrens?: number; // Updated to match the optional field
   filePaths: string[];
   company: Company;
   image?: string;

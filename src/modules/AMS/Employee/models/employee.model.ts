@@ -6,6 +6,25 @@ import fs from "fs";
 const employeeModel = prisma.$extends({
   model: {
     employee: {
+
+      async gpFindByCode(this: any, code: string) {
+        const data = await prisma.employee.findUnique({
+          where: {
+            code: code,
+            isDeleted: null,
+          },
+          select: {
+            id: true,
+            code: true,
+            surname: true,
+            name: true,
+          },
+        });
+      
+        return data;
+      },
+      
+
       async gpSoftDelete(id: string) {
         await prisma.employee.gpSoftDelete(id);
 

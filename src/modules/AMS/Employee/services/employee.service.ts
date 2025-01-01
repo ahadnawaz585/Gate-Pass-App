@@ -55,6 +55,10 @@ class EmployeeService {
     return await employeeModel.employee.gpFindById(employeeId);
   }
 
+  async getEmployeeByCode(code: string){
+    return await employeeModel.employee.gpFindByCode(code);
+  }
+
   async getTotalEmployees(): Promise<number> {
     return await employeeModel.employee.gpCount();
   }

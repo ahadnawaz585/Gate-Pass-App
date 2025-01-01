@@ -213,6 +213,14 @@ class EmployeeController extends BaseController<EmployeeService> {
     this.handleRequest(operation, successMessage, errorMessage, res);
   }
 
+  async getEmployeeByCode(req: Request, res: Response) {
+    const { code } = req.body;
+    const operation = () => this.service.getEmployeeByCode(code);
+    const successMessage = "Employee retrieved successfully!";
+    const errorMessage = "Error retrieving employee:";
+    this.handleRequest(operation, successMessage, errorMessage, res);
+  }
+
   async restoreEmployee(req: Request, res: Response) {
     const { id } = req.body;
     const operation = () => this.service.restoreEmployee(id);
