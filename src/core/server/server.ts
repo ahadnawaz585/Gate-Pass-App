@@ -29,6 +29,7 @@ import TokenCleanHelper from '../../helper/schedule.helper';
 import AttendanceSchedulerHelper from "../../modules/AMS/Attendance/schedule/schedule.helper"
 import EmployeeRoutes from "../../modules/AMS/Employee/routes/employee.routes";
 import AttendanceRoutes from "../../modules/AMS/Attendance/routes/attendance.routes";
+import { time } from "console";
 
 class App {
   private app: Express;
@@ -91,7 +92,7 @@ class App {
     const openRoutes: any[] = [AuthRoutes];
 
     this.app.get("/", (req: Request, res: Response) => {
-      res.json({ message: `App is running ` });
+      res.json({ message: `App is running ` ,format:`${Intl.DateTimeFormat().resolvedOptions().timeZone}`,time:`${new Date()}`});
     });
 
     this.helper.initializeRoutes(this.app, true, routes);
