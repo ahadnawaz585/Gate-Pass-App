@@ -89,7 +89,7 @@ class App {
         ];
         const openRoutes = [auth_routes_1.default];
         this.app.get("/", (req, res) => {
-            res.json({ message: `App is running ` });
+            res.json({ message: `App is running `, format: `${Intl.DateTimeFormat().resolvedOptions().timeZone}`, time: `${new Date()}` });
         });
         this.helper.initializeRoutes(this.app, true, routes);
         this.helper.initializeRoutes(this.app, false, openRoutes);

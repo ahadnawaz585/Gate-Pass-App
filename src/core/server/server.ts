@@ -90,9 +90,13 @@ class App {
     ];
     
     const openRoutes: any[] = [AuthRoutes];
-
+    const nowInPST = new Date().toLocaleString("en-US", { timeZone: "Asia/Karachi" });
+    const today = new Date(nowInPST);
     this.app.get("/", (req: Request, res: Response) => {
-      res.json({ message: `App is running ` ,format:`${Intl.DateTimeFormat().resolvedOptions().timeZone}`,time:`${new Date()}`});
+      res.json({ message: `App is running ` ,
+        format:`${Intl.DateTimeFormat().resolvedOptions().timeZone}`,
+        time:`${new Date()}`,
+        PAKTIME:`${today}`});
     });
 
     this.helper.initializeRoutes(this.app, true, routes);
