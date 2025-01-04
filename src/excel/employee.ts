@@ -51,8 +51,8 @@ export class EmployeeExcelUtility {
         employee.emergencyContactNo || '-', 
         employee.designation || '-', 
         employee.department || '-', 
-        employee.maritalStatus || '-', 
-        employee.noOfChildren || '-', 
+        employee.martialStatus || '-', 
+        employee.noOfChildrens || '-', 
         employee.company || '-', 
         '-', // Placeholder for the image column
         `https://quickchart.io/qr?text=${employee.code || '-'}`, // QR Code for employee
