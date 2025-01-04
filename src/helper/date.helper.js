@@ -1,12 +1,30 @@
 "use strict";
+// timeUtils.ts
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.formatDateTime = exports.formatTime = exports.formatDate = void 0;
+exports.formatDateTime = exports.formatTime = exports.formatDateWithExtraDay = exports.formatDate = void 0;
+exports.getCurrentTimeInPST = getCurrentTimeInPST;
+/**
+ * Returns the current date and time in the Pakistan Standard Time (PST) time zone.
+ * @returns {Date} A Date object with the current time in PST.
+ */
+function getCurrentTimeInPST() {
+    const currentTimeInPST = new Date().toLocaleString("en-US", { timeZone: "Asia/Karachi" });
+    return new Date(currentTimeInPST); // Convert the string back to a Date object
+}
 const formatDate = (dateString) => {
     const date = new Date(dateString);
     const options = { day: 'numeric', month: 'short', year: 'numeric' };
     return date.toLocaleDateString('en-GB', options).replace(/ /g, '-');
 };
 exports.formatDate = formatDate;
+const formatDateWithExtraDay = (dateString) => {
+    const date = new Date(dateString);
+    // Add one day to the date
+    date.setDate(date.getDate() + 1);
+    const options = { day: 'numeric', month: 'short', year: 'numeric' };
+    return date.toLocaleDateString('en-GB', options).replace(/ /g, '-');
+};
+exports.formatDateWithExtraDay = formatDateWithExtraDay;
 const formatTime = (dateString) => {
     const date = new Date(dateString);
     const options = {

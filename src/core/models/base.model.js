@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const client_1 = require("@prisma/client");
+const date_helper_1 = require("../../helper/date.helper");
 // import { tableNames } from "../static/staticData";
 const basePrisma = new client_1.PrismaClient({
 // log: ["query"],
@@ -23,7 +24,7 @@ const prisma = basePrisma.$extends({
                     if (existingItem.isDeleted === null) {
                         yield this.update({
                             where: { id },
-                            data: { isDeleted: new Date() },
+                            data: { isDeleted: (0, date_helper_1.getCurrentTimeInPST)() },
                         });
                     }
                 });
@@ -85,7 +86,7 @@ const prisma = basePrisma.$extends({
                     }
                     const createdItems = [];
                     for (const data of createdData) {
-                        let newData = Object.assign(Object.assign({}, data), { createdAt: new Date() });
+                        let newData = Object.assign(Object.assign({}, data), { createdAt: (0, date_helper_1.getCurrentTimeInPST)() });
                         const createdItem = yield this.create({
                             data: newData,
                         });
@@ -96,7 +97,7 @@ const prisma = basePrisma.$extends({
             },
             gpUpdate(updateId, updatedData) {
                 return __awaiter(this, void 0, void 0, function* () {
-                    let newData = Object.assign(Object.assign({}, updatedData), { updatedAt: new Date() });
+                    let newData = Object.assign(Object.assign({}, updatedData), { updatedAt: (0, date_helper_1.getCurrentTimeInPST)() });
                     const updatedItem = yield this.update({
                         where: { id: updateId },
                         data: newData,
@@ -218,7 +219,7 @@ const prisma = basePrisma.$extends({
             },
             gpUpdateByName(updateId, updatedData) {
                 return __awaiter(this, void 0, void 0, function* () {
-                    let newData = Object.assign(Object.assign({}, updatedData), { updatedAt: new Date() });
+                    let newData = Object.assign(Object.assign({}, updatedData), { updatedAt: (0, date_helper_1.getCurrentTimeInPST)() });
                     const updatedItem = yield this.update({
                         where: { name: updateId },
                         data: newData,

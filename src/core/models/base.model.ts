@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { Prisma } from "@prisma/client";
+import { getCurrentTimeInPST } from "../../helper/date.helper";
 // import { tableNames } from "../static/staticData";
 const basePrisma = new PrismaClient({
   // log: ["query"],
@@ -13,7 +14,7 @@ const prisma = basePrisma.$extends({
         if (existingItem.isDeleted === null) {
           await this.update({
             where: { id },
-            data: { isDeleted: new Date() },
+            data: { isDeleted: getCurrentTimeInPST() },
           });
         }
       },
@@ -92,7 +93,7 @@ const prisma = basePrisma.$extends({
         for (const data of createdData) {
           let newData = {
             ...data,
-            createdAt: new Date(),
+            createdAt: getCurrentTimeInPST(),
           };
 
           const createdItem = await this.create({
@@ -108,7 +109,7 @@ const prisma = basePrisma.$extends({
       async gpUpdate(this: any, updateId: string, updatedData: any) {
         let newData = {
           ...updatedData,
-          updatedAt: new Date(),
+          updatedAt: getCurrentTimeInPST(),
         };
         const updatedItem = await this.update({
           where: { id: updateId },
@@ -241,7 +242,7 @@ const prisma = basePrisma.$extends({
       async gpUpdateByName(this: any, updateId: string, updatedData: any) {
         let newData = {
           ...updatedData,
-          updatedAt: new Date(),
+          updatedAt: getCurrentTimeInPST(),
         };
         const updatedItem = await this.update({
           where: { name: updateId },
