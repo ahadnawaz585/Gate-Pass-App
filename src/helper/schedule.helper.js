@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const node_schedule_1 = __importDefault(require("node-schedule"));
 const token_service_1 = __importDefault(require("../modules/rbac/Token/service/token.service"));
+const date_helper_1 = require("./date.helper");
 class TokenCleanupHelper {
     constructor() {
         this.tokenService = new token_service_1.default();
@@ -22,9 +23,9 @@ class TokenCleanupHelper {
     cleanup() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const yesterday = new Date();
+                const yesterday = (0, date_helper_1.getCurrentTimeInPST)();
                 yesterday.setDate(yesterday.getDate() - 1);
-                const sixMonth = new Date();
+                const sixMonth = (0, date_helper_1.getCurrentTimeInPST)();
                 sixMonth.setDate(sixMonth.getDate() - 183);
                 this.tokenService.deleteToken(yesterday, sixMonth);
             }

@@ -88,8 +88,13 @@ class App {
             attendance_routes_1.default
         ];
         const openRoutes = [auth_routes_1.default];
+        const nowInPST = new Date().toLocaleString("en-US", { timeZone: "Asia/Karachi" });
+        const today = new Date(nowInPST);
         this.app.get("/", (req, res) => {
-            res.json({ message: `App is running `, format: `${Intl.DateTimeFormat().resolvedOptions().timeZone}`, time: `${new Date()}` });
+            res.json({ message: `App is running `,
+                format: `${Intl.DateTimeFormat().resolvedOptions().timeZone}`,
+                time: `${new Date()}`,
+                PAKTIME: `${today}` });
         });
         this.helper.initializeRoutes(this.app, true, routes);
         this.helper.initializeRoutes(this.app, false, openRoutes);

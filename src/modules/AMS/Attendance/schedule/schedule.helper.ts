@@ -11,6 +11,7 @@ import {
 } from "@prisma/client";
 import AttendanceService from "../services/attendnace.service";
 import { connect } from "http2";
+import { getCurrentTimeInPST } from "../../../../helper/date.helper";
 
 class AttendanceSchedulerHelper {
   private service: AttendanceScheduleService = new AttendanceScheduleService();
@@ -88,7 +89,7 @@ class AttendanceSchedulerHelper {
   // }
 
   private async absentMarking() {
-    const now = new Date();
+    const now = getCurrentTimeInPST();
     try {
       // Check if the time is between 11:50 PM and 12:00 AM
       const hour = now.getHours();

@@ -2,6 +2,7 @@ import schedule from "node-schedule";
 import prisma from "../core/models/base.model";
 import { cpSync } from "fs";
 import BlackListedTokenService from "../modules/rbac/Token/service/token.service";
+import { getCurrentTimeInPST } from "./date.helper";
 
 class TokenCleanupHelper {
   private cleanupTask: schedule.Job;
@@ -16,9 +17,9 @@ class TokenCleanupHelper {
 
   private async cleanup() {
     try {
-      const yesterday = new Date();
+      const yesterday = getCurrentTimeInPST();
       yesterday.setDate(yesterday.getDate() - 1);
-      const sixMonth = new Date();
+      const sixMonth = getCurrentTimeInPST();
       sixMonth.setDate(sixMonth.getDate() - 183);
       this.tokenService.deleteToken(yesterday, sixMonth);
     } catch (error) {
