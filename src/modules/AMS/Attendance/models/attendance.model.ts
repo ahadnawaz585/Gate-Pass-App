@@ -9,8 +9,8 @@ const attendanceModel = prisma.$extends({
     attendance: {
       async checkAttendance(employeeId: string, status: AttendanceStatus) {
         // Convert current time to Pakistan Standard Time
-        const nowInPST = new Date().toLocaleString("en-US", { timeZone: "Asia/Karachi" });
-        const today = new Date(nowInPST);
+        // const nowInPST = new Date().toLocaleString("en-US", { timeZone: "Asia/Karachi" });
+        const today = getCurrentTimeInPST();
         today.setHours(0, 0, 0, 0);
       
         const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000); // Start of the next day in PST
@@ -77,7 +77,7 @@ const attendanceModel = prisma.$extends({
       async markAttendance(attendanceData: Attendance) {
         // Convert current time to Pakistan Standard Time
         const nowInPST = new Date().toLocaleString("en-US", { timeZone: "Asia/Karachi" });
-        const today = new Date(nowInPST);
+        const today = getCurrentTimeInPST();
         today.setHours(0, 0, 0, 0); // Start of the day in PST
       
         const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000); // Start of the next day in PST
