@@ -94,12 +94,13 @@ class AttendanceSchedulerHelper {
       // Check if the time is between 11:50 PM and 12:00 AM
       const hour = now.getHours();
       const minutes = now.getMinutes();
+      console.log(hour,':',minutes)
       const absentsMarked =
        await this.attendanceSchedulerService.isTodaysAttendanceMarked();
       if (!absentsMarked) {
-        if (hour === 11 && minutes >= 55) {
+        if (hour === 23 && minutes >= 55) {
           console.log(
-            "Running cleanup during the last 10 minutes of the day..."
+            `Running cleanup during the last 10 minutes of the day as the time is now : ${now}...`
           );
           console.log(
             "Not marked:",
@@ -144,7 +145,7 @@ class AttendanceSchedulerHelper {
           }
         } else {
           console.log(
-            "Cleanup skipped. Current time is outside the last 10 minutes of the day."
+            `Cleanup skipped. Current time is outside the last 10 minutes of the day. now : ${now}`
           );
         }
       }else{
