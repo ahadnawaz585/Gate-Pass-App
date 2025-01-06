@@ -78,16 +78,15 @@ const attendanceModel = prisma.$extends({
         // Convert current time to Pakistan Standard Time
         const nowInPST = new Date().toLocaleString("en-US", { timeZone: "Asia/Karachi" });
         const today = getCurrentTimeInPST();
-        today.setHours(0, 0, 0, 0); // Start of the day in PST
-      
-        const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000); // Start of the next day in PST
+        const todayStart = startOfDay(today); // Start of the day in PST
+        const todayEnd = endOfDay(today);
       
         const existingAttendance = await prisma.attendance.findFirst({
           where: {
             employeeId: attendanceData.employeeId,
             date: {
-              gte: today, // Start of today in PST
-              lt: tomorrow, // Start of tomorrow in PST
+              gte: todayStart, // Start of today in PST
+              lt: todayEnd, // Start of tomorrow in PST
             },
           },
         });
