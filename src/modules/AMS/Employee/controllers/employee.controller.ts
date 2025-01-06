@@ -11,11 +11,24 @@ class EmployeeController extends BaseController<EmployeeService> {
   private excelUtility = new EmployeeExcelUtility();
 
   async getAllEmployees(req: Request, res: Response) {
-    const operation = () => this.service.getAllEmployees();
+    const param = req.query.filter as string; 
+
+    const operation = async () => {
+        if (param) {
+            console.log(`Query parameter provided: ${param}`);
+            return await this.service.getFilterEmployees(); 
+        } else {
+            console.log("No query parameter provided.");
+            return await this.service.getAllEmployees();
+        }
+    };
+
     const successMessage = "Employees retrieved successfully!";
     const errorMessage = "Error retrieving employees:";
     this.handleRequest(operation, successMessage, errorMessage, res);
-  }
+}
+
+
   async deleteFiles(req: Request, res: Response) {
     const { employeeId, fileName } = req.body;
 

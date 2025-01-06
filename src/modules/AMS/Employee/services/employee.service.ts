@@ -11,6 +11,10 @@ class EmployeeService {
     return await employeeModel.employee.gpPgFindMany(page, pageSize);
   }
 
+  async getFilterEmployees(): Promise<any[]> {
+    return await employeeModel.employee.gpFindFilterMany();
+  }
+
   async updateFilePaths(employeeId:string, updatedFilePaths:string[]){
     await employeeModel.employee.updateFilePaths(employeeId,updatedFilePaths);
   }

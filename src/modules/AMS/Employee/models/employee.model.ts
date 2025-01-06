@@ -7,6 +7,22 @@ const employeeModel = prisma.$extends({
   model: {
     employee: {
 
+      async gpFindFilterMany(this: any) {
+        const data = await this.findMany({
+          where: {
+            isDeleted: null,
+          },
+          select: {
+            id: true,
+            code: true,
+            surname: true,
+            name: true,
+          },
+        });
+
+        return data;
+      },
+
       async gpFindByCode(this: any, code: string) {
         const data = await prisma.employee.findUnique({
           where: {
