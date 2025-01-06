@@ -1,7 +1,10 @@
 import prisma from "../../../../core/models/base.model";
 import { startOfDay, endOfDay } from "date-fns";
 import { Attendance } from "../types/Attendance";
-import { formatTime, getCurrentTimeInPST } from "../../../../helper/date.helper";
+import {
+  formatTime,
+  getCurrentTimeInPST,
+} from "../../../../helper/date.helper";
 import { AttendanceStatus, Employee } from "@prisma/client";
 
 const attendanceModel = prisma.$extends({
@@ -11,37 +14,36 @@ const attendanceModel = prisma.$extends({
         // Convert current time to Pakistan Standard Time
         // const nowInPST = new Date().toLocaleString("en-US", { timeZone: "Asia/Karachi" });
         const today = getCurrentTimeInPST();
-        today.setHours(0, 0, 0, 0);
-      
-        const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000); // Start of the next day in PST
-      
+        const todayStart = startOfDay(today); // Start of the day in PST
+        const todayEnd = endOfDay(today);
+
         const employee: Employee = await prisma.employee.gpFindById(employeeId);
         const existingAttendance: any = await prisma.attendance.findFirst({
           where: {
             employeeId: employeeId,
             date: {
-              gte: today, 
-              lt: tomorrow, 
+              gte: todayStart,
+              lt: todayEnd,
             },
           },
         });
-      
+
         const employeeName = `${employee.name} ${employee.surname}`;
-      
+
         if (existingAttendance && existingAttendance.status === "ON_LEAVE") {
           return {
             success: true,
             message: `${employeeName} is on Leave`,
           };
         }
-      
+
         if (existingAttendance && existingAttendance.status === "LATE") {
           return {
             success: true,
             message: `${employeeName} is late `,
           };
         }
-      
+
         if (existingAttendance && existingAttendance.status === "PRESENT") {
           if (existingAttendance.checkIn && !existingAttendance.checkOut) {
             return {
@@ -56,31 +58,34 @@ const attendanceModel = prisma.$extends({
               success: true,
               message: `${employeeName} has already checked in at: ${formatTime(
                 existingAttendance.checkIn
-              )} and checked out at: ${formatTime(existingAttendance.checkOut)}`,
+              )} and checked out at: ${formatTime(
+                existingAttendance.checkOut
+              )}`,
             };
           }
         }
-      
+
         if (existingAttendance && existingAttendance.status === "ABSENT") {
           return {
             success: true,
             message: `${employeeName} is absent.`,
           };
         }
-      
+
         return {
           success: true,
           message: `${employeeName} has not checked in yet! Do you want to mark attendance for ${employeeName} as ${status}?`,
         };
-      }
-      ,
+      },
       async markAttendance(attendanceData: Attendance) {
         // Convert current time to Pakistan Standard Time
-        const nowInPST = new Date().toLocaleString("en-US", { timeZone: "Asia/Karachi" });
+        const nowInPST = new Date().toLocaleString("en-US", {
+          timeZone: "Asia/Karachi",
+        });
         const today = getCurrentTimeInPST();
         const todayStart = startOfDay(today); // Start of the day in PST
         const todayEnd = endOfDay(today);
-      
+
         const existingAttendance = await prisma.attendance.findFirst({
           where: {
             employeeId: attendanceData.employeeId,
@@ -90,14 +95,14 @@ const attendanceModel = prisma.$extends({
             },
           },
         });
-      
+
         if (existingAttendance) {
           // If attendance already exists, mark it as a checkout
           if (existingAttendance.checkIn) {
             if (!existingAttendance.checkOut) {
               const updatedAttendance = await prisma.attendance.update({
                 where: { id: existingAttendance.id },
-                data: { checkOut: getCurrentTimeInPST()}, // Checkout time is the current time
+                data: { checkOut: getCurrentTimeInPST() }, // Checkout time is the current time
               });
               return {
                 success: true,
@@ -106,32 +111,30 @@ const attendanceModel = prisma.$extends({
               };
             }
           }
-      
+
           // If checkOut already exists
           return {
             success: true,
             message: "Attendance already marked, including check-out",
           };
         }
-      
+
         // If no existing attendance, proceed to create
         const newAttendance = await prisma.attendance.create({
           data: attendanceData,
         });
-      
+
         return {
           success: true,
           message: "Attendance created successfully!",
           data: newAttendance,
         };
-      }
-,      
-
+      },
       async gpFindMany(this: any) {
         // Calculate start and end of today
         const todayStart = startOfDay(getCurrentTimeInPST());
         const todayEnd = endOfDay(getCurrentTimeInPST());
-
+        console.log(todayStart, todayEnd);
 
         // Fetch full attendance details with employee data
         const data = await prisma.$queryRaw`
