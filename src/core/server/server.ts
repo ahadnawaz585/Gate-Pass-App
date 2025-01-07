@@ -26,7 +26,7 @@ import FeaturePermissionRoutes from "../../modules/rbac/Features/routes/featureP
 import TokenCleanHelper from '../../helper/schedule.helper';
 
 //AMS
-import AttendanceSchedulerHelper from "../../modules/AMS/Attendance/schedule/schedule.helper"
+import AttendanceSchedulerHelper from "../../modules/AMS/Attendance/helper/schedule.helper"
 import EmployeeRoutes from "../../modules/AMS/Employee/routes/employee.routes";
 import AttendanceRoutes from "../../modules/AMS/Attendance/routes/attendance.routes";
 import { time } from "console";

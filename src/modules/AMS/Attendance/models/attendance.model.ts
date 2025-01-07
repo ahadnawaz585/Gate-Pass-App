@@ -6,44 +6,42 @@ import {
   getCurrentTimeInPST,
 } from "../../../../helper/date.helper";
 import { AttendanceStatus, Employee } from "@prisma/client";
+import { convertToUTC } from "../helper/date.helper";
 
 const attendanceModel = prisma.$extends({
   model: {
     attendance: {
       async checkAttendance(employeeId: string, status: AttendanceStatus) {
-        // Convert current time to Pakistan Standard Time
-        // const nowInPST = new Date().toLocaleString("en-US", { timeZone: "Asia/Karachi" });
-        const today = getCurrentTimeInPST();
-        const todayStart = startOfDay(today); // Start of the day in PST
-        const todayEnd = endOfDay(today);
-
+        const todayStart = convertToUTC(startOfDay(getCurrentTimeInPST())); // Convert PST to UTC
+        const todayEnd = convertToUTC(endOfDay(getCurrentTimeInPST()));
+      
         const employee: Employee = await prisma.employee.gpFindById(employeeId);
         const existingAttendance: any = await prisma.attendance.findFirst({
           where: {
             employeeId: employeeId,
             date: {
-              gte: todayStart,
-              lt: todayEnd,
+              gte: todayStart, // UTC start of day
+              lt: todayEnd, // UTC end of day
             },
           },
         });
-
+      
         const employeeName = `${employee.name} ${employee.surname}`;
-
+      
         if (existingAttendance && existingAttendance.status === "ON_LEAVE") {
           return {
             success: true,
             message: `${employeeName} is on Leave`,
           };
         }
-
+      
         if (existingAttendance && existingAttendance.status === "LATE") {
           return {
             success: true,
             message: `${employeeName} is late `,
           };
         }
-
+      
         if (existingAttendance && existingAttendance.status === "PRESENT") {
           if (existingAttendance.checkIn && !existingAttendance.checkOut) {
             return {
@@ -58,51 +56,44 @@ const attendanceModel = prisma.$extends({
               success: true,
               message: `${employeeName} has already checked in at: ${formatTime(
                 existingAttendance.checkIn
-              )} and checked out at: ${formatTime(
-                existingAttendance.checkOut
-              )}`,
+              )} and checked out at: ${formatTime(existingAttendance.checkOut)}`,
             };
           }
         }
-
+      
         if (existingAttendance && existingAttendance.status === "ABSENT") {
           return {
             success: true,
             message: `${employeeName} is absent.`,
           };
         }
-
+      
         return {
           success: true,
           message: `${employeeName} has not checked in yet! Do you want to mark attendance for ${employeeName} as ${status}?`,
         };
       },
+      
       async markAttendance(attendanceData: Attendance) {
-        // Convert current time to Pakistan Standard Time
-        const nowInPST = new Date().toLocaleString("en-US", {
-          timeZone: "Asia/Karachi",
-        });
-        const today = getCurrentTimeInPST();
-        const todayStart = startOfDay(today); // Start of the day in PST
-        const todayEnd = endOfDay(today);
-
+        const todayStart = convertToUTC(startOfDay(getCurrentTimeInPST())); // PST to UTC
+        const todayEnd = convertToUTC(endOfDay(getCurrentTimeInPST())); // PST to UTC
+      
         const existingAttendance = await prisma.attendance.findFirst({
           where: {
             employeeId: attendanceData.employeeId,
             date: {
-              gte: todayStart, // Start of today in PST
-              lt: todayEnd, // Start of tomorrow in PST
+              gte: todayStart,
+              lt: todayEnd,
             },
           },
         });
-
+      
         if (existingAttendance) {
-          // If attendance already exists, mark it as a checkout
           if (existingAttendance.checkIn) {
             if (!existingAttendance.checkOut) {
               const updatedAttendance = await prisma.attendance.update({
                 where: { id: existingAttendance.id },
-                data: { checkOut: getCurrentTimeInPST() }, // Checkout time is the current time
+                data: { checkOut: convertToUTC(new Date()) }, // Save checkout as UTC
               });
               return {
                 success: true,
@@ -111,32 +102,36 @@ const attendanceModel = prisma.$extends({
               };
             }
           }
-
-          // If checkOut already exists
+      
           return {
             success: true,
             message: "Attendance already marked, including check-out",
           };
         }
-
-        // If no existing attendance, proceed to create
+      
+        // Only convert checkIn to UTC if it's defined
+        if (attendanceData.checkIn) {
+          attendanceData.checkIn = convertToUTC(attendanceData.checkIn);
+        }
+      
         const newAttendance = await prisma.attendance.create({
           data: attendanceData,
         });
-
+      
         return {
           success: true,
           message: "Attendance created successfully!",
           data: newAttendance,
         };
-      },
+      }
+      
+      ,
       async gpFindMany(this: any) {
-        // Calculate start and end of today
-        const todayStart = startOfDay(getCurrentTimeInPST());
-        const todayEnd = endOfDay(getCurrentTimeInPST());
+        const todayStart = convertToUTC(startOfDay(getCurrentTimeInPST())); // PST to UTC
+        const todayEnd = convertToUTC(endOfDay(getCurrentTimeInPST())); // PST to UTC
+      
         console.log(todayStart, todayEnd);
-
-        // Fetch full attendance details with employee data
+      
         const data = await prisma.$queryRaw`
           SELECT 
             a.*,
@@ -146,7 +141,7 @@ const attendanceModel = prisma.$extends({
             e."contactNo",
             e."address",
             e."department", 
-            e."code" -- Include additional employee fields if needed
+            e."code"
           FROM "Attendance" a
           LEFT JOIN "Employee" e 
             ON a."employeeId" = e.id
@@ -154,9 +149,10 @@ const attendanceModel = prisma.$extends({
             AND a."date" >= ${todayStart.toISOString()}::timestamp
             AND a."date" <= ${todayEnd.toISOString()}::timestamp
         `;
-
+      
         return data;
-      },
+      }
+      ,
     },
   },
 });
