@@ -58,9 +58,9 @@ const attendanceModel = prisma.$extends({
             return {
               success: true,
               message: `${employeeName} has already checked in at: ${formatTime(
-                existingAttendance.checkIn
+                convertToPST(existingAttendance.checkIn).toString()
               )} and checked out at: ${formatTime(
-                existingAttendance.checkOut
+                convertToPST(existingAttendance.checkOut).toString()
               )}`,
             };
           }
@@ -103,7 +103,7 @@ const attendanceModel = prisma.$extends({
             if (!existingAttendance.checkOut) {
               const updatedAttendance = await prisma.attendance.update({
                 where: { id: existingAttendance.id },
-                data: { checkOut: getCurrentTimeInPST() }, // Checkout time is the current time
+                data: { checkOut: new Date() }, // Checkout time is the current time
               });
               return {
                 success: true,

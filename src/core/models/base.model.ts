@@ -14,7 +14,7 @@ const prisma = basePrisma.$extends({
         if (existingItem.isDeleted === null) {
           await this.update({
             where: { id },
-            data: { isDeleted: getCurrentTimeInPST() },
+            data: { isDeleted:new Date() },
           });
         }
       },
@@ -93,7 +93,7 @@ const prisma = basePrisma.$extends({
         for (const data of createdData) {
           let newData = {
             ...data,
-            createdAt: getCurrentTimeInPST(),
+            createdAt:new Date(),
           };
 
           const createdItem = await this.create({
@@ -109,7 +109,7 @@ const prisma = basePrisma.$extends({
       async gpUpdate(this: any, updateId: string, updatedData: any) {
         let newData = {
           ...updatedData,
-          updatedAt: getCurrentTimeInPST(),
+          updatedAt:new Date(),
         };
         const updatedItem = await this.update({
           where: { id: updateId },
@@ -242,7 +242,7 @@ const prisma = basePrisma.$extends({
       async gpUpdateByName(this: any, updateId: string, updatedData: any) {
         let newData = {
           ...updatedData,
-          updatedAt: getCurrentTimeInPST(),
+          updatedAt:new Date(),
         };
         const updatedItem = await this.update({
           where: { name: updateId },
