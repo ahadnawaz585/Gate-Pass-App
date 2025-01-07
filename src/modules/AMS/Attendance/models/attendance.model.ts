@@ -14,7 +14,7 @@ const attendanceModel = prisma.$extends({
       async checkAttendance(employeeId: string, status: AttendanceStatus) {
         // Convert current time to Pakistan Standard Time
         // const nowInPST = new Date().toLocaleString("en-US", { timeZone: "Asia/Karachi" });
-        const today = getCurrentTimeInPST();
+        const today = new Date();
         const todayStart = startOfDay(today); // Start of the day in PST
         const todayEnd = endOfDay(today);
 
@@ -83,7 +83,7 @@ const attendanceModel = prisma.$extends({
         const nowInPST = new Date().toLocaleString("en-US", {
           timeZone: "Asia/Karachi",
         });
-        const today = getCurrentTimeInPST();
+        const today = new Date();
         const todayStart = startOfDay(today); // Start of the day in PST
         const todayEnd = endOfDay(today);
 
@@ -133,8 +133,8 @@ const attendanceModel = prisma.$extends({
       },
       async gpFindMany(this: any) {
         // Calculate start and end of today
-        const todayStart = startOfDay(getCurrentTimeInPST());
-        const todayEnd = endOfDay(getCurrentTimeInPST());
+        const todayStart = startOfDay(new Date());
+        const todayEnd = endOfDay(new Date());
         console.log(todayStart, todayEnd);
 
         // Fetch full attendance details with employee data
