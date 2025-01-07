@@ -11,7 +11,7 @@ export function getCurrentTimeInPST(): Date {
 // Convert a date from a specific timezone to UTC
 export function convertToUTC(date: Date): Date {
   // Convert the input date (assumed to be in the target timezone) to UTC
-  return new Date(date.toISOString());
+  return new Date(date);
 }
 
 // Convert a UTC date to PST
