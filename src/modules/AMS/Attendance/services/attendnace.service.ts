@@ -8,8 +8,16 @@ class AttendanceService {
     return await attendanceModel.attendance.gpFindMany();
   }
 
+  async getEmployeeAttendance(employeeId:string,from:Date,to:Date){
+    return await attendanceModel.attendance.gpFindEmployeeAttendance(employeeId,from,to);
+  }
+
   async getAttendances(page: number, pageSize: number): Promise<paginatedData> {
     return await attendanceModel.attendance.gpPgFindMany(page, pageSize);
+  }
+
+  async getDatedAttendance(from:Date,to:Date){
+    return await attendanceModel.attendance.gpFindDatedMany(from,to);
   }
 
   async getDeletedAttendances(

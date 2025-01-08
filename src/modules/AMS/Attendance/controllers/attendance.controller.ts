@@ -22,6 +22,22 @@ class AttendanceController extends BaseController<AttendanceService> {
     this.handleRequest(operation, successMessage, errorMessage, res);
   }
 
+  async getEmployeeAttendance(req: Request, res: Response) {
+    const {employeeId, from, to } = req.body;
+    const operation = () => this.service.getEmployeeAttendance(employeeId,from,to);
+    const successMessage = "Attendances retrieved successfully!";
+    const errorMessage = "Error retrieving Attendances:";
+    this.handleRequest(operation, successMessage, errorMessage, res);
+  }
+
+  async getDated(req: Request, res: Response) {
+    const { from, to } = req.body;
+    const operation = () => this.service.getDatedAttendance(from,to);
+    const successMessage = "Attendances retrieved successfully!";
+    const errorMessage = "Error retrieving Attendances:";
+    this.handleRequest(operation, successMessage, errorMessage, res);
+  }
+
   async getDeletedAttendances(req: Request, res: Response) {
     const { page, pageSize } = req.body;
     const operation = () => this.service.getDeletedAttendances(page, pageSize);

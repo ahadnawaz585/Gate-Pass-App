@@ -131,6 +131,75 @@ const attendanceModel = prisma.$extends({
           data: newAttendance,
         };
       },
+
+      async gpFindEmployeeAttendance(
+        this: any,
+        employeeId: string,
+        from: Date,
+        to: Date
+      ) {
+        // Calculate start and end of today
+        const startOfMonth = new Date();
+        startOfMonth.setDate(1);
+        const today = new Date();
+
+        const todayStart = from ? startOfDay(from) : startOfMonth;
+        const todayEnd = to ? endOfDay(to) : today;
+        console.log(todayStart, todayEnd);
+
+        // Fetch full attendance details with employee data
+        const data = await prisma.$queryRaw`
+          SELECT 
+            a.*,
+            e."name" AS "employeeName",
+            e."surname" AS "employeeSurname",
+            e."designation",
+            e."contactNo",
+            e."address",
+            e."department", 
+            e."code" -- Include additional employee fields if needed
+          FROM "Attendance" a
+          LEFT JOIN "Employee" e 
+            ON a."employeeId" = ${employeeId}
+          WHERE a."isDeleted" IS NULL
+            AND a."date" >= ${todayStart.toISOString()}::timestamp
+            AND a."date" <= ${todayEnd.toISOString()}::timestamp
+        `;
+
+        return data;
+      },
+
+      async gpFindDatedMany(this: any, from: Date, to: Date) {
+        // Calculate start and end of today
+        const startOfMonth = new Date();
+        startOfMonth.setDate(1);
+        const today = new Date();
+
+        const todayStart = from ? startOfDay(from) :from;
+        const todayEnd = to ?  endOfDay(to) : today;
+        console.log(todayStart, todayEnd);
+
+        // Fetch full attendance details with employee data
+        const data = await prisma.$queryRaw`
+          SELECT 
+            a.*,
+            e."name" AS "employeeName",
+            e."surname" AS "employeeSurname",
+            e."designation",
+            e."contactNo",
+            e."address",
+            e."department", 
+            e."code" -- Include additional employee fields if needed
+          FROM "Attendance" a
+          LEFT JOIN "Employee" e 
+            ON a."employeeId" = e.id
+          WHERE a."isDeleted" IS NULL
+            AND a."date" >= ${todayStart.toISOString()}::timestamp
+            AND a."date" <= ${todayEnd.toISOString()}::timestamp
+        `;
+
+        return data;
+      },
       async gpFindMany(this: any) {
         // Calculate start and end of today
         const todayStart = startOfDay(new Date());

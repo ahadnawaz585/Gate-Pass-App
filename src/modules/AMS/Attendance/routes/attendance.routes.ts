@@ -14,6 +14,8 @@ class AttendanceRoutes {
   private initializeRoutes(): void {
     this.router.get('/get', this.controller.getAllAttendances.bind(this.controller));
     this.router.post('/get', this.controller.getAttendances.bind(this.controller));
+    this.router.post('/getDate', this.controller.getDated.bind(this.controller));
+    this.router.post('/getEmployeeAttendance', this.controller.getEmployeeAttendance.bind(this.controller));
     this.router.get('/total', this.controller.getTotalAttendances.bind(this.controller));
     this.router.post('/getById', this.controller.getAttendanceById.bind(this.controller));
     this.router.post('/create', this.controller.createAttendance.bind(this.controller));
