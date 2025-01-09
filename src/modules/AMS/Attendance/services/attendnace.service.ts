@@ -33,9 +33,9 @@ class AttendanceService {
     return await attendanceModel.attendance.markAttendance(attendanceData);
   }
 
-  async checkAttendance(employeeId:string,attendanceStatus:AttendanceStatus
+  async checkAttendance(employeeId:string,attendanceStatus:AttendanceStatus,date:Date
   ){
-    return await attendanceModel.attendance.checkAttendance(employeeId,attendanceStatus);
+    return await attendanceModel.attendance.checkAttendance(employeeId,attendanceStatus,date);
   }
 
   async createAttendance(

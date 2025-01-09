@@ -72,9 +72,9 @@ class AttendanceController extends BaseController<AttendanceService> {
   }
 
   async checkAttendance(req: Request, res: Response) {
-    const { employeeId ,status} = req.body;
+    const { employeeId ,status,date} = req.body;
     try {
-    const result = await this.service.checkAttendance(employeeId,status);
+    const result = await this.service.checkAttendance(employeeId,status,date);
     return res
       .status(201)
       .json({ message: result.message, success:result.success });

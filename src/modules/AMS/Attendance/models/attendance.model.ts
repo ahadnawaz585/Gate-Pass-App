@@ -11,12 +11,16 @@ import { convertToPST } from "../helper/date.helper";
 const attendanceModel = prisma.$extends({
   model: {
     attendance: {
-      async checkAttendance(employeeId: string, status: AttendanceStatus) {
+      async checkAttendance(
+        employeeId: string,
+        status: AttendanceStatus,
+        date?: Date
+      ) {
         // Convert current time to Pakistan Standard Time
         // const nowInPST = new Date().toLocaleString("en-US", { timeZone: "Asia/Karachi" });
-        const today = new Date();
-        const todayStart = startOfDay(today); // Start of the day in PST
-        const todayEnd = endOfDay(today);
+        const targetDate = date ? new Date(date) : new Date();
+        const todayStart = startOfDay(targetDate);
+        const todayEnd = endOfDay(targetDate);
 
         const employee: Employee = await prisma.employee.gpFindById(employeeId);
         const existingAttendance: any = await prisma.attendance.findFirst({
@@ -83,9 +87,9 @@ const attendanceModel = prisma.$extends({
         const nowInPST = new Date().toLocaleString("en-US", {
           timeZone: "Asia/Karachi",
         });
-        const today = new Date();
-        const todayStart = startOfDay(today); // Start of the day in PST
-        const todayEnd = endOfDay(today);
+        const targetDate = attendanceData.date ? new Date(attendanceData.date) : new Date();
+        const todayStart = startOfDay(targetDate);
+        const todayEnd = endOfDay(targetDate);
 
         const existingAttendance = await prisma.attendance.findFirst({
           where: {
