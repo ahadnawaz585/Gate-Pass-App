@@ -7,8 +7,9 @@ const attendanceScheduleModel = prisma.$extends({
   model: {
     attendanceScheduler: {
       async isTodayAttendanceMarkedSuccessfully(): Promise<boolean> {
-        const todayStart = startOfDay(getCurrentTimeInPST());
-        const todayEnd = endOfDay(getCurrentTimeInPST());
+        const today = new Date();
+        const todayStart = startOfDay(today); // Start of the day in PST
+        const todayEnd = endOfDay(today);
 
         const attendanceSchedule = await prisma.attendanceScheduler.findFirst({
           where: {
@@ -24,8 +25,9 @@ const attendanceScheduleModel = prisma.$extends({
         return !!attendanceSchedule; // Return true if a matching record is found, otherwise false
       },
       async getNonCheckedOutEmployees() {
-        const todayStart = startOfDay(getCurrentTimeInPST());
-        const todayEnd = endOfDay(getCurrentTimeInPST());
+        const today = new Date();
+        const todayStart = startOfDay(today); // Start of the day in PST
+        const todayEnd = endOfDay(today);
       
         // Find all employees who have not been deleted
         const allEmployees = await prisma.employee.findMany({
@@ -60,8 +62,9 @@ const attendanceScheduleModel = prisma.$extends({
 ,      
 
       async getNonMarkedEmployees() {
-        const todayStart = startOfDay(getCurrentTimeInPST());
-        const todayEnd = endOfDay(getCurrentTimeInPST());
+        const today = new Date();
+        const todayStart = startOfDay(today); // Start of the day in PST
+        const todayEnd = endOfDay(today);
 
         const allEmployees = await prisma.employee.findMany({
           select: { id: true },
