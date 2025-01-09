@@ -167,7 +167,6 @@ const attendanceModel = prisma.$extends({
         //     AND a."date" <= ${todayEnd.toISOString()}::timestamp
         // `;
         const data = await prisma.$queryRaw`
-
 SELECT 
     a.id,
     a."employeeId",
@@ -191,6 +190,7 @@ JOIN
     public."Employee" e ON a."employeeId" = e.id
 WHERE 
     a."employeeId" = ${employeeId} 
+    AND a."isDeleted" IS NULL
     AND a."date" >= ${todayStart.toISOString()}::timestamp
     AND a."date" <= ${todayEnd.toISOString()}::timestamp
 ORDER BY 
