@@ -148,22 +148,53 @@ const attendanceModel = prisma.$extends({
         console.log(todayStart, todayEnd);
 
         // Fetch full attendance details with employee data
+        // const data = await prisma.$queryRaw`
+
+        //   SELECT
+        //     a.*,
+        //     e."name" AS "employeeName",
+        //     e."surname" AS "employeeSurname",
+        //     e."designation",
+        //     e."contactNo",
+        //     e."address",
+        //     e."department",
+        //     e."code" -- Include additional employee fields if needed
+        //   FROM "Attendance" a
+        //   LEFT JOIN "Employee" e
+        //     ON a."employeeId" = ${employeeId}
+        //   WHERE a."isDeleted" IS NULL
+        //     AND a."date" >= ${todayStart.toISOString()}::timestamp
+        //     AND a."date" <= ${todayEnd.toISOString()}::timestamp
+        // `;
         const data = await prisma.$queryRaw`
-          SELECT 
-            a.*,
-            e."name" AS "employeeName",
-            e."surname" AS "employeeSurname",
-            e."designation",
-            e."contactNo",
-            e."address",
-            e."department", 
-            e."code" -- Include additional employee fields if needed
-          FROM "Attendance" a
-          LEFT JOIN "Employee" e 
-            ON a."employeeId" = ${employeeId}
-          WHERE a."isDeleted" IS NULL
-            AND a."date" >= ${todayStart.toISOString()}::timestamp
-            AND a."date" <= ${todayEnd.toISOString()}::timestamp
+
+SELECT 
+    a.id,
+    a."employeeId",
+    a."date",
+    a.status,
+    a."checkIn",
+    a."checkOut",
+    a.location,
+    a."createdAt",
+    a."updatedAt",
+    a."isDeleted",
+    e."name" AS "employeeName",
+    e."surname" AS "employeeSurname",
+    e."designation",
+    e."contactNo",
+    e."address",
+    e."department"
+FROM 
+    public."Attendance" a
+JOIN 
+    public."Employee" e ON a."employeeId" = e.id
+WHERE 
+    a."employeeId" = ${employeeId} 
+    AND a."date" >= ${todayStart.toISOString()}::timestamp
+    AND a."date" <= ${todayEnd.toISOString()}::timestamp
+ORDER BY 
+    a."date" ASC; 
         `;
 
         return data;
@@ -175,8 +206,8 @@ const attendanceModel = prisma.$extends({
         startOfMonth.setDate(1);
         const today = new Date();
 
-        const todayStart = from ? startOfDay(from) :from;
-        const todayEnd = to ?  endOfDay(to) : today;
+        const todayStart = from ? startOfDay(from) : from;
+        const todayEnd = to ? endOfDay(to) : today;
         console.log(todayStart, todayEnd);
 
         // Fetch full attendance details with employee data
@@ -196,6 +227,8 @@ const attendanceModel = prisma.$extends({
           WHERE a."isDeleted" IS NULL
             AND a."date" >= ${todayStart.toISOString()}::timestamp
             AND a."date" <= ${todayEnd.toISOString()}::timestamp
+            ORDER BY 
+            a."date" ASC
         `;
 
         return data;
@@ -223,6 +256,8 @@ const attendanceModel = prisma.$extends({
           WHERE a."isDeleted" IS NULL
             AND a."date" >= ${todayStart.toISOString()}::timestamp
             AND a."date" <= ${todayEnd.toISOString()}::timestamp
+            ORDER BY 
+    a."date" ASC
         `;
 
         return data;
