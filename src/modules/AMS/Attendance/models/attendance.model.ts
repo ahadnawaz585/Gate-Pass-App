@@ -18,7 +18,7 @@ const attendanceModel = prisma.$extends({
       ) {
         // Convert current time to Pakistan Standard Time
         // const nowInPST = new Date().toLocaleString("en-US", { timeZone: "Asia/Karachi" });
-        const targetDate = date ? new Date(date) : new Date();
+        const targetDate = date ? date : new Date();
         const todayStart = startOfDay(targetDate);
         const todayEnd = endOfDay(targetDate);
 
@@ -87,7 +87,7 @@ const attendanceModel = prisma.$extends({
         const nowInPST = new Date().toLocaleString("en-US", {
           timeZone: "Asia/Karachi",
         });
-        const targetDate = attendanceData.date ? new Date(attendanceData.date) : new Date();
+        const targetDate = attendanceData.date ? attendanceData.date : new Date();
         const todayStart = startOfDay(targetDate);
         const todayEnd = endOfDay(targetDate);
 
