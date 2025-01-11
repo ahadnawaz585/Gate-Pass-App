@@ -21,7 +21,7 @@ const attendanceModel = prisma.$extends({
         const targetDate = date ? date : new Date();
         const todayStart = startOfDay(targetDate);
         const todayEnd = endOfDay(targetDate);
-
+        console.log(`when checking attendance : ${todayStart} - ${todayEnd} for ${targetDate}`)
         const employee: Employee = await prisma.employee.gpFindById(employeeId);
         const existingAttendance: any = await prisma.attendance.findFirst({
           where: {
@@ -91,6 +91,8 @@ const attendanceModel = prisma.$extends({
         const todayStart = startOfDay(targetDate);
         const todayEnd = endOfDay(targetDate);
 
+        console.log(` when marking attendance ${todayStart} - ${todayEnd} for ${targetDate}`)
+
         const existingAttendance = await prisma.attendance.findFirst({
           where: {
             employeeId: attendanceData.employeeId,
@@ -149,7 +151,7 @@ const attendanceModel = prisma.$extends({
 
         const todayStart = from ? startOfDay(from) : startOfMonth;
         const todayEnd = to ? endOfDay(to) : today;
-        console.log(todayStart, todayEnd);
+        console.log(todayStart, todayEnd ,"for finding employee");
 
         // Fetch full attendance details with employee data
         // const data = await prisma.$queryRaw`
