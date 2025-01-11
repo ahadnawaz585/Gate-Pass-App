@@ -16,97 +16,113 @@ const attendanceModel = prisma.$extends({
         status: AttendanceStatus,
         date?: Date
       ) {
-        // Convert current time to Pakistan Standard Time
-        // const nowInPST = new Date().toLocaleString("en-US", { timeZone: "Asia/Karachi" });
-        const targetDate = date ? date : new Date();
-        const todayStart = startOfDay(targetDate);
-        const todayEnd = endOfDay(targetDate);
-        console.log(`when checking attendance : ${todayStart} - ${todayEnd} for ${targetDate}`)
-        const employee: Employee = await prisma.employee.gpFindById(employeeId);
-        const existingAttendance: any = await prisma.attendance.findFirst({
-          where: {
-            employeeId: employeeId,
-            date: {
-              gte: todayStart,
-              lt: todayEnd,
+        try {
+          const targetDate = date ? date : new Date();
+      
+          // Convert to Pakistan Standard Time (PST)
+          const timeZone = 'Asia/Karachi';
+          const targetDateInPST = convertToPST(targetDate);
+      
+          // Start and end of the day in PST
+          const todayStart = startOfDay(targetDateInPST);
+          const todayEnd = endOfDay(targetDateInPST);
+      
+          console.log(`when checking attendance: ${todayStart} - ${todayEnd} for ${targetDate}`);
+      
+          const employee: Employee = await prisma.employee.gpFindById(employeeId);
+          const existingAttendance: any = await prisma.attendance.findFirst({
+            where: {
+              employeeId: employeeId,
+              date: {
+                gte: todayStart,
+                lt: todayEnd,
+              },
             },
-          },
-        });
-
-        const employeeName = `${employee.name} ${employee.surname}`;
-
-        if (existingAttendance && existingAttendance.status === "ON_LEAVE") {
-          return {
-            success: true,
-            message: `${employeeName} is on Leave`,
-          };
-        }
-
-        if (existingAttendance && existingAttendance.status === "LATE") {
-          return {
-            success: true,
-            message: `${employeeName} is late `,
-          };
-        }
-
-        if (existingAttendance && existingAttendance.status === "PRESENT") {
-          if (existingAttendance.checkIn && !existingAttendance.checkOut) {
-            return {
-              success: true,
-              message: `${employeeName} has checked in at: ${formatTime(
-                convertToPST(existingAttendance.checkIn).toString()
-              )} and has not checked out.\nDo you want to check out ${employeeName}?`,
-            };
+          });
+      
+          const employeeName = `${employee.name} ${employee.surname}`;
+      
+          if (existingAttendance) {
+            if (existingAttendance.status === "ON_LEAVE") {
+              return {
+                success: true,
+                message: `${employeeName} is on Leave`,
+              };
+            }
+      
+            if (existingAttendance.status === "LATE") {
+              return {
+                success: true,
+                message: `${employeeName} is late`,
+              };
+            }
+      
+            if (existingAttendance.status === "PRESENT") {
+              if (existingAttendance.checkIn && !existingAttendance.checkOut) {
+                return {
+                  success: true,
+                  message: `${employeeName} has checked in at: ${formatTime(
+                    convertToPST(existingAttendance.checkIn).toString()
+                  )} and has not checked out.\nDo you want to check out ${employeeName}?`,
+                };
+              }
+              if (existingAttendance.checkOut && existingAttendance.checkIn) {
+                return {
+                  success: true,
+                  message: `${employeeName} has already checked in at: ${formatTime(
+                    convertToPST(existingAttendance.checkIn).toString()
+                  )} and checked out at: ${formatTime(
+                    convertToPST(existingAttendance.checkOut).toString()
+                  )}`,
+                };
+              }
+            }
+      
+            if (existingAttendance.status === "ABSENT") {
+              return {
+                success: true,
+                message: `${employeeName} is absent.`,
+              };
+            }
           }
-          if (existingAttendance.checkOut && existingAttendance.checkIn) {
-            return {
-              success: true,
-              message: `${employeeName} has already checked in at: ${formatTime(
-                convertToPST(existingAttendance.checkIn).toString()
-              )} and checked out at: ${formatTime(
-                convertToPST(existingAttendance.checkOut).toString()
-              )}`,
-            };
-          }
-        }
-
-        if (existingAttendance && existingAttendance.status === "ABSENT") {
+      
           return {
             success: true,
-            message: `${employeeName} is absent.`,
+            message: `${employeeName} has not checked in yet! Do you want to mark attendance for ${employeeName} as ${status}?`,
           };
+        } catch (error) {
+          console.error("Error checking attendance:", error);
+          return { success: false, message: "An error occurred while checking attendance." };
         }
-
-        return {
-          success: true,
-          message: `${employeeName} has not checked in yet! Do you want to mark attendance for ${employeeName} as ${status}?`,
-        };
       },
       async markAttendance(attendanceData: Attendance) {
-        // Convert current time to Pakistan Standard Time
-        const nowInPST = new Date().toLocaleString("en-US", {
-          timeZone: "Asia/Karachi",
-        });
-        const targetDate = attendanceData.date ? attendanceData.date : new Date();
-        const todayStart = startOfDay(targetDate);
-        const todayEnd = endOfDay(targetDate);
-
-        console.log(` when marking attendance ${todayStart} - ${todayEnd} for ${targetDate}`)
-
-        const existingAttendance = await prisma.attendance.findFirst({
-          where: {
-            employeeId: attendanceData.employeeId,
-            date: {
-              gte: todayStart, // Start of today in PST
-              lt: todayEnd, // Start of tomorrow in PST
+        try {
+          const timeZone = 'Asia/Karachi';
+          
+          // Convert to Pakistan Standard Time (PST)
+          const nowInPST = convertToPST(new Date());
+          const targetDate = attendanceData.date ? attendanceData.date : new Date();
+          const targetDateInPST = convertToPST(targetDate);
+      
+          // Start and end of the day in PST
+          const todayStart = startOfDay(targetDateInPST);
+          const todayEnd = endOfDay(targetDateInPST);
+      
+          console.log(`when marking attendance: ${todayStart} - ${todayEnd} for ${targetDate}`);
+      
+          const existingAttendance = await prisma.attendance.findFirst({
+            where: {
+              employeeId: attendanceData.employeeId,
+              date: {
+                gte: todayStart,
+                lt: todayEnd,
+              },
             },
-          },
-        });
-
-        if (existingAttendance) {
-          // If attendance already exists, mark it as a checkout
-          if (existingAttendance.checkIn) {
-            if (!existingAttendance.checkOut) {
+          });
+      
+          if (existingAttendance) {
+            // If attendance already exists, mark it as a checkout
+            if (existingAttendance.checkIn && !existingAttendance.checkOut) {
               const updatedAttendance = await prisma.attendance.update({
                 where: { id: existingAttendance.id },
                 data: { checkOut: new Date() }, // Checkout time is the current time
@@ -117,27 +133,30 @@ const attendanceModel = prisma.$extends({
                 data: updatedAttendance,
               };
             }
+      
+            return {
+              success: true,
+              message: "Attendance already marked, including check-out",
+            };
           }
-
-          // If checkOut already exists
+      
+          // If no existing attendance, proceed to create
+          const newAttendance = await prisma.attendance.create({
+            data: attendanceData,
+          });
+      
           return {
             success: true,
-            message: "Attendance already marked, including check-out",
+            message: "Attendance created successfully!",
+            data: newAttendance,
           };
+        } catch (error) {
+          console.error("Error marking attendance:", error);
+          return { success: false, message: "An error occurred while marking attendance." };
         }
-
-        // If no existing attendance, proceed to create
-        const newAttendance = await prisma.attendance.create({
-          data: attendanceData,
-        });
-
-        return {
-          success: true,
-          message: "Attendance created successfully!",
-          data: newAttendance,
-        };
-      },
-
+      }
+      
+,
       async gpFindEmployeeAttendance(
         this: any,
         employeeId: string,
