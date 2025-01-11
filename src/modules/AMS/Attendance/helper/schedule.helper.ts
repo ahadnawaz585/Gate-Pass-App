@@ -9,8 +9,8 @@ import {
   ScheduleParent,
   ScheduleStatus,
 } from "@prisma/client";
+import { startOfDay } from "date-fns";
 import AttendanceService from "../services/attendnace.service";
-import { connect } from "http2";
 import { getCurrentTimeInPST } from "../../../../helper/date.helper";
 
 class AttendanceSchedulerHelper {
@@ -33,22 +33,21 @@ class AttendanceSchedulerHelper {
 
   private async absentMarking() {
     const now = getCurrentTimeInPST();
+    const todayDate = startOfDay(now); // Start of the day ensures it's for the current day
+  
     try {
-      // Check if the time is between 11:50 PM and 12:00 AM
+      // Check if the time is between 11:55 PM and 12:00 AM
       const hour = now.getHours();
       const minutes = now.getMinutes();
-      console.log(hour,':',minutes)
-      const absentsMarked =
-       await this.attendanceSchedulerService.isTodaysAttendanceMarked();
+      console.log(hour, ":", minutes);
+      const absentsMarked = await this.attendanceSchedulerService.isTodaysAttendanceMarked();
+  
       if (!absentsMarked) {
         if (hour === 23 && minutes >= 55) {
           console.log(
-            `Running cleanup during the last 10 minutes of the day as the time is now : ${now}...`
+            `Running cleanup during the last 5 minutes of the day as the time is now: ${now}...`
           );
-          console.log(
-            "Not marked:",
-            await this.service.getNonMarkedEmployees()
-          );
+  
           const data = await this.service.getNonMarkedEmployees();
           try {
             data.forEach(async (employeeId: string) => {
@@ -56,55 +55,50 @@ class AttendanceSchedulerHelper {
                 const attendance: Attendance = {
                   employeeId,
                   status: AttendanceStatus.ABSENT,
-                  date: now,
+                  date: todayDate, // Use today's start of the day
+                  createdAt: now, // Keep creation time as now
                 };
-
+  
                 await this.attendanceService.markAttendance(attendance);
               }
             });
-
+  
             const scheduleReport: AttendanceScheduler = {
-              log: "Absents marked Successfully !",
+              log: "Absents marked successfully!",
               parent: ScheduleParent.ABSENT,
               status: ScheduleStatus.SUCCESS,
               employeeIds: data,
               runTime: now,
             };
-
-            await this.attendanceSchedulerService.createAttendanceSchedule(
-              scheduleReport
-            );
+  
+            await this.attendanceSchedulerService.createAttendanceSchedule(scheduleReport);
           } catch (err: any) {
             const scheduleReport: AttendanceScheduler = {
-              log: "Absents marking failed !",
+              log: "Absents marking failed!",
               parent: ScheduleParent.ABSENT,
               status: ScheduleStatus.FAIL,
               employeeIds: [],
               runTime: now,
             };
-            await this.attendanceSchedulerService.createAttendanceSchedule(
-              scheduleReport
-            );
+            await this.attendanceSchedulerService.createAttendanceSchedule(scheduleReport);
           }
         } else {
           console.log(
-            `Cleanup skipped. Current time is outside the last 10 minutes of the day. now : ${now}`
+            `Cleanup skipped. Current time is outside the last 5 minutes of the day. Now: ${now}`
           );
         }
-      }else{
-        console.log("skipping becasue the status is : ",absentsMarked);
+      } else {
+        console.log("Skipping because the status is:", absentsMarked);
       }
     } catch (error) {
       const scheduleReport: AttendanceScheduler = {
-        log: "Absents marking failed !",
+        log: "Absents marking failed!",
         parent: ScheduleParent.ABSENT,
         status: ScheduleStatus.SKIP,
         employeeIds: [],
         runTime: now,
       };
-      await this.attendanceSchedulerService.createAttendanceSchedule(
-        scheduleReport
-      );
+      await this.attendanceSchedulerService.createAttendanceSchedule(scheduleReport);
       console.error("Error during attendance cleanup:", error);
     }
   }
