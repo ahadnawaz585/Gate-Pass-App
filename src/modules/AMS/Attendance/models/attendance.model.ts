@@ -1,9 +1,12 @@
 import prisma from "../../../../core/models/base.model";
 import { startOfDay, endOfDay } from "date-fns";
 import { Attendance } from "../types/Attendance";
-import { formatTime, getCurrentTimeInPST } from "../../../../helper/date.helper";
+import {
+  formatTime,
+  getCurrentTimeInPST,
+} from "../../../../helper/date.helper";
 import { AttendanceStatus, Employee } from "@prisma/client";
-import { convertToPST, convertToUTC } from "../helper/date.helper";
+import { convertToPST } from "../helper/date.helper";
 
 const attendanceModel = prisma.$extends({
   model: {
@@ -13,98 +16,98 @@ const attendanceModel = prisma.$extends({
         status: AttendanceStatus,
         date?: Date
       ) {
-        try {
-          const targetDate = date || new Date();
-          // const targetDateInUTC = convertToUTC(targetDate);  // Ensure UTC conversion
-      
-          const todayStart = startOfDay(targetDate);
-          const todayEnd = endOfDay(targetDate);
-      
-          console.log(
-            `Checking attendance for ${employeeId}: ${todayStart} - ${todayEnd} and the time is ${targetDate}`
-          );
-      
-          const employee: Employee = await prisma.employee.gpFindById(employeeId);
-          const existingAttendance = await prisma.attendance.findFirst({
-            where: {
-              employeeId,
-              date: {
-                gte: todayStart.toISOString(),
-                lt: todayEnd.toISOString(),
-              },
+        // Convert current time to Pakistan Standard Time
+        // const nowInPST = new Date().toLocaleString("en-US", { timeZone: "Asia/Karachi" });
+        const targetDate = date ? new Date(date) : new Date();
+        const todayStart = startOfDay(targetDate);
+        const todayEnd = endOfDay(targetDate);
+
+        const employee: Employee = await prisma.employee.gpFindById(employeeId);
+        const existingAttendance: any = await prisma.attendance.findFirst({
+          where: {
+            employeeId: employeeId,
+            date: {
+              gte: todayStart,
+              lt: todayEnd,
             },
-          });
-      
-          const employeeName = `${employee.name} ${employee.surname}`;
-      
-          if (existingAttendance) {
-            switch (existingAttendance.status) {
-              case "ON_LEAVE":
-                return { success: true, message: `${employeeName} is on leave.` };
-              case "LATE":
-                return { success: true, message: `${employeeName} is late.` };
-              case "PRESENT":
-                if (existingAttendance.checkIn && !existingAttendance.checkOut) {
-                  return {
-                    success: true,
-                    message: `${employeeName} checked in at ${formatTime(
-                      convertToPST(existingAttendance.checkIn).toString()
-                    )} but has not checked out. Do you want to check out ${employeeName}?`,
-                  };
-                }
-                if (existingAttendance.checkOut && existingAttendance.checkIn) {
-                  return {
-                    success: true,
-                    message: `${employeeName} checked in at ${formatTime(
-                      convertToPST(existingAttendance?.checkIn).toString()
-                    )} and checked out at ${formatTime(
-                      convertToPST(existingAttendance.checkOut).toString()
-                    )}.`,
-                  };
-                }
-                break;
-              case "ABSENT":
-                return { success: true, message: `${employeeName} is absent.` };
-            }
-          }
-      
+          },
+        });
+
+        const employeeName = `${employee.name} ${employee.surname}`;
+
+        if (existingAttendance && existingAttendance.status === "ON_LEAVE") {
           return {
             success: true,
-            message: `${employeeName} has not checked in yet! Do you want to mark attendance as ${status}?`,
+            message: `${employeeName} is on Leave`,
           };
-        } catch (error) {
-          console.error("Error checking attendance:", error);
-          return { success: false, message: "An error occurred while checking attendance." };
         }
+
+        if (existingAttendance && existingAttendance.status === "LATE") {
+          return {
+            success: true,
+            message: `${employeeName} is late `,
+          };
+        }
+
+        if (existingAttendance && existingAttendance.status === "PRESENT") {
+          if (existingAttendance.checkIn && !existingAttendance.checkOut) {
+            return {
+              success: true,
+              message: `${employeeName} has checked in at: ${formatTime(
+                convertToPST(existingAttendance.checkIn).toString()
+              )} and has not checked out.\nDo you want to check out ${employeeName}?`,
+            };
+          }
+          if (existingAttendance.checkOut && existingAttendance.checkIn) {
+            return {
+              success: true,
+              message: `${employeeName} has already checked in at: ${formatTime(
+                convertToPST(existingAttendance.checkIn).toString()
+              )} and checked out at: ${formatTime(
+                convertToPST(existingAttendance.checkOut).toString()
+              )}`,
+            };
+          }
+        }
+
+        if (existingAttendance && existingAttendance.status === "ABSENT") {
+          return {
+            success: true,
+            message: `${employeeName} is absent.`,
+          };
+        }
+
+        return {
+          success: true,
+          message: `${employeeName} has not checked in yet! Do you want to mark attendance for ${employeeName} as ${status}?`,
+        };
       },
-      
       async markAttendance(attendanceData: Attendance) {
-        try {
-          const targetDate = attendanceData.date || new Date();
-          // const targetDateInUTC = convertToUTC(targetDate);  // Ensure UTC conversion
-      
-          const todayStart = startOfDay(targetDate);
-          const todayEnd = endOfDay(targetDate);
-      
-          console.log(
-            `Marking attendance for ${attendanceData.employeeId}: ${todayStart} - ${todayEnd} and the time is ${targetDate}`
-          );
-      
-          const existingAttendance = await prisma.attendance.findFirst({
-            where: {
-              employeeId: attendanceData.employeeId,
-              date: {
-                gte: todayStart.toISOString(),
-                lt: todayEnd.toISOString(),
-              },
+        // Convert current time to Pakistan Standard Time
+        const nowInPST = new Date().toLocaleString("en-US", {
+          timeZone: "Asia/Karachi",
+        });
+        const targetDate = attendanceData.date ? new Date(attendanceData.date) : new Date();
+        const todayStart = startOfDay(targetDate);
+        const todayEnd = endOfDay(targetDate);
+
+        const existingAttendance = await prisma.attendance.findFirst({
+          where: {
+            employeeId: attendanceData.employeeId,
+            date: {
+              gte: todayStart, // Start of today in PST
+              lt: todayEnd, // Start of tomorrow in PST
             },
-          });
-      
-          if (existingAttendance) {
-            if (existingAttendance.checkIn && !existingAttendance.checkOut) {
+          },
+        });
+
+        if (existingAttendance) {
+          // If attendance already exists, mark it as a checkout
+          if (existingAttendance.checkIn) {
+            if (!existingAttendance.checkOut) {
               const updatedAttendance = await prisma.attendance.update({
                 where: { id: existingAttendance.id },
-                data: { checkOut: targetDate.toISOString() },
+                data: { checkOut: new Date() }, // Checkout time is the current time
               });
               return {
                 success: true,
@@ -112,90 +115,153 @@ const attendanceModel = prisma.$extends({
                 data: updatedAttendance,
               };
             }
-            return { success: true, message: "Attendance already marked." };
           }
-      
-          const newAttendance = await prisma.attendance.create({
-            data: attendanceData,
-          });
-      
+
+          // If checkOut already exists
           return {
             success: true,
-            message: "Attendance created successfully!",
-            data: newAttendance,
+            message: "Attendance already marked, including check-out",
           };
-        } catch (error) {
-          console.error("Error marking attendance:", error);
-          return { success: false, message: "An error occurred while marking attendance." };
         }
+
+        // If no existing attendance, proceed to create
+        const newAttendance = await prisma.attendance.create({
+          data: attendanceData,
+        });
+
+        return {
+          success: true,
+          message: "Attendance created successfully!",
+          data: newAttendance,
+        };
       },
-      
 
-      async gpFindEmployeeAttendance(employeeId: string, from: Date, to: Date) {
-        const todayStart = from ? startOfDay(from) : startOfDay(new Date());
-        const todayEnd = to ? endOfDay(to) : endOfDay(new Date());
+      async gpFindEmployeeAttendance(
+        this: any,
+        employeeId: string,
+        from: Date,
+        to: Date
+      ) {
+        // Calculate start and end of today
+        const startOfMonth = new Date();
+        startOfMonth.setDate(1);
+        const today = new Date();
 
-        console.log(
-          `Fetching attendance for ${employeeId}: ${todayStart} - ${todayEnd}`
-        );
+        const todayStart = from ? startOfDay(from) : startOfMonth;
+        const todayEnd = to ? endOfDay(to) : today;
+        console.log(todayStart, todayEnd);
 
+        // Fetch full attendance details with employee data
+        // const data = await prisma.$queryRaw`
+
+        //   SELECT
+        //     a.*,
+        //     e."name" AS "employeeName",
+        //     e."surname" AS "employeeSurname",
+        //     e."designation",
+        //     e."contactNo",
+        //     e."address",
+        //     e."department",
+        //     e."code" -- Include additional employee fields if needed
+        //   FROM "Attendance" a
+        //   LEFT JOIN "Employee" e
+        //     ON a."employeeId" = ${employeeId}
+        //   WHERE a."isDeleted" IS NULL
+        //     AND a."date" >= ${todayStart.toISOString()}::timestamp
+        //     AND a."date" <= ${todayEnd.toISOString()}::timestamp
+        // `;
         const data = await prisma.$queryRaw`
-          SELECT 
-            a.id, a."employeeId", a."date", a.status, a."checkIn", a."checkOut", 
-            a.location, a."createdAt", a."updatedAt", a."isDeleted",
-            e."name" AS "employeeName", e."surname" AS "employeeSurname",
-            e."designation", e."contactNo", e."address", e."department"
-          FROM public."Attendance" a
-          JOIN public."Employee" e ON a."employeeId" = e.id
-          WHERE a."employeeId" = ${employeeId} 
-            AND a."isDeleted" IS NULL
-            AND a."date" >= ${todayStart.toISOString()}::timestamp
-            AND a."date" <= ${todayEnd.toISOString()}::timestamp
-          ORDER BY a."date" ASC;
+SELECT 
+    a.id,
+    a."employeeId",
+    a."date",
+    a.status,
+    a."checkIn",
+    a."checkOut",
+    a.location,
+    a."createdAt",
+    a."updatedAt",
+    a."isDeleted",
+    e."name" AS "employeeName",
+    e."surname" AS "employeeSurname",
+    e."designation",
+    e."contactNo",
+    e."address",
+    e."department"
+FROM 
+    public."Attendance" a
+JOIN 
+    public."Employee" e ON a."employeeId" = e.id
+WHERE 
+    a."employeeId" = ${employeeId} 
+    AND a."isDeleted" IS NULL
+    AND a."date" >= ${todayStart.toISOString()}::timestamp
+    AND a."date" <= ${todayEnd.toISOString()}::timestamp
+ORDER BY 
+    a."date" ASC; 
         `;
 
         return data;
       },
 
-      async gpFindDatedMany(from: Date, to: Date) {
-        const todayStart = from ? startOfDay(from) : startOfDay(new Date());
-        const todayEnd = to ? endOfDay(to) : endOfDay(new Date());
+      async gpFindDatedMany(this: any, from: Date, to: Date) {
+        // Calculate start and end of today
+        const startOfMonth = new Date();
+        startOfMonth.setDate(1);
+        const today = new Date();
 
-        console.log(`Fetching attendance between ${todayStart} and ${todayEnd}`);
+        const todayStart = from ? startOfDay(from) : from;
+        const todayEnd = to ? endOfDay(to) : today;
+        console.log(todayStart, todayEnd);
 
+        // Fetch full attendance details with employee data
         const data = await prisma.$queryRaw`
           SELECT 
-            a.*, 
-            e."name" AS "employeeName", e."surname" AS "employeeSurname",
-            e."designation", e."contactNo", e."address", e."department"
-          FROM public."Attendance" a
-          LEFT JOIN public."Employee" e ON a."employeeId" = e.id
+            a.*,
+            e."name" AS "employeeName",
+            e."surname" AS "employeeSurname",
+            e."designation",
+            e."contactNo",
+            e."address",
+            e."department", 
+            e."code" -- Include additional employee fields if needed
+          FROM "Attendance" a
+          LEFT JOIN "Employee" e 
+            ON a."employeeId" = e.id
           WHERE a."isDeleted" IS NULL
             AND a."date" >= ${todayStart.toISOString()}::timestamp
             AND a."date" <= ${todayEnd.toISOString()}::timestamp
-          ORDER BY a."date" ASC;
+            ORDER BY 
+            a."date" ASC
         `;
 
         return data;
       },
-
-      async gpFindMany() {
+      async gpFindMany(this: any) {
+        // Calculate start and end of today
         const todayStart = startOfDay(new Date());
         const todayEnd = endOfDay(new Date());
+        console.log(todayStart, todayEnd);
 
-        console.log(`Fetching today's attendance: ${todayStart} - ${todayEnd}`);
-
+        // Fetch full attendance details with employee data
         const data = await prisma.$queryRaw`
           SELECT 
-            a.*, 
-            e."name" AS "employeeName", e."surname" AS "employeeSurname",
-            e."designation", e."contactNo", e."address", e."department"
-          FROM public."Attendance" a
-          LEFT JOIN public."Employee" e ON a."employeeId" = e.id
+            a.*,
+            e."name" AS "employeeName",
+            e."surname" AS "employeeSurname",
+            e."designation",
+            e."contactNo",
+            e."address",
+            e."department", 
+            e."code" -- Include additional employee fields if needed
+          FROM "Attendance" a
+          LEFT JOIN "Employee" e 
+            ON a."employeeId" = e.id
           WHERE a."isDeleted" IS NULL
             AND a."date" >= ${todayStart.toISOString()}::timestamp
             AND a."date" <= ${todayEnd.toISOString()}::timestamp
-          ORDER BY a."date" ASC;
+            ORDER BY 
+    a."date" ASC
         `;
 
         return data;
