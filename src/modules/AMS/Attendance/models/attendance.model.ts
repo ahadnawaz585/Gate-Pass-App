@@ -15,13 +15,13 @@ const attendanceModel = prisma.$extends({
       ) {
         try {
           const targetDate = date || new Date();
-          const targetDateInUTC = convertToUTC(targetDate);  // Ensure UTC conversion
+          // const targetDateInUTC = convertToUTC(targetDate);  // Ensure UTC conversion
       
-          const todayStart = startOfDay(targetDateInUTC);
-          const todayEnd = endOfDay(targetDateInUTC);
+          const todayStart = startOfDay(targetDate);
+          const todayEnd = endOfDay(targetDate);
       
           console.log(
-            `Checking attendance for ${employeeId}: ${todayStart} - ${todayEnd}`
+            `Checking attendance for ${employeeId}: ${todayStart} - ${todayEnd} and the time is ${targetDate}`
           );
       
           const employee: Employee = await prisma.employee.gpFindById(employeeId);
@@ -29,8 +29,8 @@ const attendanceModel = prisma.$extends({
             where: {
               employeeId,
               date: {
-                gte: todayStart,
-                lt: todayEnd,
+                gte: todayStart.toISOString(),
+                lt: todayEnd.toISOString(),
               },
             },
           });
@@ -48,7 +48,7 @@ const attendanceModel = prisma.$extends({
                   return {
                     success: true,
                     message: `${employeeName} checked in at ${formatTime(
-                      convertToUTC(existingAttendance.checkIn).toString()
+                      convertToPST(existingAttendance.checkIn).toString()
                     )} but has not checked out. Do you want to check out ${employeeName}?`,
                   };
                 }
@@ -56,9 +56,9 @@ const attendanceModel = prisma.$extends({
                   return {
                     success: true,
                     message: `${employeeName} checked in at ${formatTime(
-                      convertToUTC(existingAttendance?.checkIn).toString()
+                      convertToPST(existingAttendance?.checkIn).toString()
                     )} and checked out at ${formatTime(
-                      convertToUTC(existingAttendance.checkOut).toString()
+                      convertToPST(existingAttendance.checkOut).toString()
                     )}.`,
                   };
                 }
@@ -81,21 +81,21 @@ const attendanceModel = prisma.$extends({
       async markAttendance(attendanceData: Attendance) {
         try {
           const targetDate = attendanceData.date || new Date();
-          const targetDateInUTC = convertToUTC(targetDate);  // Ensure UTC conversion
+          // const targetDateInUTC = convertToUTC(targetDate);  // Ensure UTC conversion
       
-          const todayStart = startOfDay(targetDateInUTC);
-          const todayEnd = endOfDay(targetDateInUTC);
+          const todayStart = startOfDay(targetDate);
+          const todayEnd = endOfDay(targetDate);
       
           console.log(
-            `Marking attendance for ${attendanceData.employeeId}: ${todayStart} - ${todayEnd}`
+            `Marking attendance for ${attendanceData.employeeId}: ${todayStart} - ${todayEnd} and the time is ${targetDate}`
           );
       
           const existingAttendance = await prisma.attendance.findFirst({
             where: {
               employeeId: attendanceData.employeeId,
               date: {
-                gte: todayStart,
-                lt: todayEnd,
+                gte: todayStart.toISOString(),
+                lt: todayEnd.toISOString(),
               },
             },
           });
@@ -104,7 +104,7 @@ const attendanceModel = prisma.$extends({
             if (existingAttendance.checkIn && !existingAttendance.checkOut) {
               const updatedAttendance = await prisma.attendance.update({
                 where: { id: existingAttendance.id },
-                data: { checkOut: new Date() },
+                data: { checkOut: targetDate.toISOString() },
               });
               return {
                 success: true,
