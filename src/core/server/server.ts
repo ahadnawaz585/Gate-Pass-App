@@ -29,7 +29,7 @@ import TokenCleanHelper from '../../helper/schedule.helper';
 import AttendanceSchedulerHelper from "../../modules/AMS/Attendance/helper/schedule.helper"
 import EmployeeRoutes from "../../modules/AMS/Employee/routes/employee.routes";
 import AttendanceRoutes from "../../modules/AMS/Attendance/routes/attendance.routes";
-import { time } from "console";
+import LeaveRoutes from "../../modules/AMS/Leaves/routes/leave.routes";
 
 class App {
   private app: Express;
@@ -86,6 +86,7 @@ class App {
 
       //AMS
       EmployeeRoutes,
+      LeaveRoutes,
       AttendanceRoutes
     ];
     

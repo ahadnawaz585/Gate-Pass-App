@@ -38,6 +38,7 @@ const schedule_helper_1 = __importDefault(require("../../helper/schedule.helper"
 const schedule_helper_2 = __importDefault(require("../../modules/AMS/Attendance/helper/schedule.helper"));
 const employee_routes_1 = __importDefault(require("../../modules/AMS/Employee/routes/employee.routes"));
 const attendance_routes_1 = __importDefault(require("../../modules/AMS/Attendance/routes/attendance.routes"));
+const leave_routes_1 = __importDefault(require("../../modules/AMS/Leaves/routes/leave.routes"));
 class App {
     constructor() {
         this.app = (0, express_1.default)();
@@ -85,6 +86,7 @@ class App {
             feature_routes_1.default,
             //AMS
             employee_routes_1.default,
+            leave_routes_1.default,
             attendance_routes_1.default
         ];
         const openRoutes = [auth_routes_1.default];
