@@ -3,7 +3,7 @@ import { startOfDay, endOfDay } from "date-fns";
 import { Attendance } from "../types/Attendance";
 import { formatTime, getCurrentTimeInPST } from "../../../../helper/date.helper";
 import { AttendanceStatus, Employee } from "@prisma/client";
-import { convertToPST } from "../helper/date.helper";
+import { convertToPST, convertToUTC } from "../helper/date.helper";
 
 const attendanceModel = prisma.$extends({
   model: {
@@ -15,15 +15,15 @@ const attendanceModel = prisma.$extends({
       ) {
         try {
           const targetDate = date || new Date();
-          const targetDateInPST = convertToPST(targetDate);
-
-          const todayStart = startOfDay(targetDateInPST);
-          const todayEnd = endOfDay(targetDateInPST);
-
+          const targetDateInUTC = convertToUTC(targetDate);  // Ensure UTC conversion
+      
+          const todayStart = startOfDay(targetDateInUTC);
+          const todayEnd = endOfDay(targetDateInUTC);
+      
           console.log(
             `Checking attendance for ${employeeId}: ${todayStart} - ${todayEnd}`
           );
-
+      
           const employee: Employee = await prisma.employee.gpFindById(employeeId);
           const existingAttendance = await prisma.attendance.findFirst({
             where: {
@@ -34,9 +34,9 @@ const attendanceModel = prisma.$extends({
               },
             },
           });
-
+      
           const employeeName = `${employee.name} ${employee.surname}`;
-
+      
           if (existingAttendance) {
             switch (existingAttendance.status) {
               case "ON_LEAVE":
@@ -48,7 +48,7 @@ const attendanceModel = prisma.$extends({
                   return {
                     success: true,
                     message: `${employeeName} checked in at ${formatTime(
-                      convertToPST(existingAttendance.checkIn).toString()
+                      convertToUTC(existingAttendance.checkIn).toString()
                     )} but has not checked out. Do you want to check out ${employeeName}?`,
                   };
                 }
@@ -56,9 +56,9 @@ const attendanceModel = prisma.$extends({
                   return {
                     success: true,
                     message: `${employeeName} checked in at ${formatTime(
-                      convertToPST(existingAttendance?.checkIn).toString()
+                      convertToUTC(existingAttendance?.checkIn).toString()
                     )} and checked out at ${formatTime(
-                      convertToPST(existingAttendance.checkOut).toString()
+                      convertToUTC(existingAttendance.checkOut).toString()
                     )}.`,
                   };
                 }
@@ -67,7 +67,7 @@ const attendanceModel = prisma.$extends({
                 return { success: true, message: `${employeeName} is absent.` };
             }
           }
-
+      
           return {
             success: true,
             message: `${employeeName} has not checked in yet! Do you want to mark attendance as ${status}?`,
@@ -77,19 +77,19 @@ const attendanceModel = prisma.$extends({
           return { success: false, message: "An error occurred while checking attendance." };
         }
       },
-
+      
       async markAttendance(attendanceData: Attendance) {
         try {
           const targetDate = attendanceData.date || new Date();
-          const targetDateInPST = convertToPST(targetDate);
-
-          const todayStart = startOfDay(targetDateInPST);
-          const todayEnd = endOfDay(targetDateInPST);
-
+          const targetDateInUTC = convertToUTC(targetDate);  // Ensure UTC conversion
+      
+          const todayStart = startOfDay(targetDateInUTC);
+          const todayEnd = endOfDay(targetDateInUTC);
+      
           console.log(
             `Marking attendance for ${attendanceData.employeeId}: ${todayStart} - ${todayEnd}`
           );
-
+      
           const existingAttendance = await prisma.attendance.findFirst({
             where: {
               employeeId: attendanceData.employeeId,
@@ -99,7 +99,7 @@ const attendanceModel = prisma.$extends({
               },
             },
           });
-
+      
           if (existingAttendance) {
             if (existingAttendance.checkIn && !existingAttendance.checkOut) {
               const updatedAttendance = await prisma.attendance.update({
@@ -114,11 +114,11 @@ const attendanceModel = prisma.$extends({
             }
             return { success: true, message: "Attendance already marked." };
           }
-
+      
           const newAttendance = await prisma.attendance.create({
             data: attendanceData,
           });
-
+      
           return {
             success: true,
             message: "Attendance created successfully!",
@@ -129,6 +129,7 @@ const attendanceModel = prisma.$extends({
           return { success: false, message: "An error occurred while marking attendance." };
         }
       },
+      
 
       async gpFindEmployeeAttendance(employeeId: string, from: Date, to: Date) {
         const todayStart = from ? startOfDay(from) : startOfDay(new Date());
