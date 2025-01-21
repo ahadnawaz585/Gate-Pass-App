@@ -61,16 +61,16 @@ class LeaveAllocController extends BaseController<LeaveAllocService> {
   }
 
   async updateLeaveAllocation(req: Request, res: Response) {
-    const { allocId, data } = req.body;
-    const operation = () => this.service.updateLeaveAllocation(allocId, data);
+    const { id, data } = req.body;
+    const operation = () => this.service.updateLeaveAllocation(id, data);
     const successMessage = "Leave allocation updated successfully!";
     const errorMessage = "Error updating leave allocation:";
     this.handleRequest(operation, successMessage, errorMessage, res);
   }
 
   async deleteLeaveAllocation(req: Request, res: Response) {
-    const { allocId } = req.body;
-    const operation = () => this.service.deleteLeaveAllocation(allocId);
+    const { id } = req.body;
+    const operation = () => this.service.deleteLeaveAllocation(id);
     const successMessage = "Leave allocation deleted successfully!";
     const errorMessage = "Error deleting leave allocation:";
     this.handleRequest(operation, successMessage, errorMessage, res);

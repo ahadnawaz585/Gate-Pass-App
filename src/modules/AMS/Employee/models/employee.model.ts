@@ -37,7 +37,7 @@ const employeeModel = prisma.$extends({
           },
         });
       
-        return data;
+       return data;
       },
       
 

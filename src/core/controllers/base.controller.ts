@@ -17,7 +17,7 @@ abstract class BaseController<T> {
       console.error(errorMessage, error);
       res.status(500).json({ error: errorMessage });
     }
-  }
+  } 
 
   
 }

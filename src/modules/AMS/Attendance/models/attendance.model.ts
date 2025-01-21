@@ -38,6 +38,7 @@ const attendanceModel = prisma.$extends({
         if (existingAttendance && existingAttendance.status === "ON_LEAVE") {
           return {
             success: true,
+            status:existingAttendance.status,
             message: `${employeeName} is on Leave`,
           };
         }
@@ -45,6 +46,7 @@ const attendanceModel = prisma.$extends({
         if (existingAttendance && existingAttendance.status === "LATE") {
           return {
             success: true,
+            status:existingAttendance.status,
             message: `${employeeName} is late `,
           };
         }
@@ -53,6 +55,7 @@ const attendanceModel = prisma.$extends({
           if (existingAttendance.checkIn && !existingAttendance.checkOut) {
             return {
               success: true,
+              status:existingAttendance.status,
               message: `${employeeName} has checked in at: ${formatTime(
                 convertToPST(existingAttendance.checkIn).toString()
               )} and has not checked out.\nDo you want to check out ${employeeName}?`,
@@ -61,6 +64,7 @@ const attendanceModel = prisma.$extends({
           if (existingAttendance.checkOut && existingAttendance.checkIn) {
             return {
               success: true,
+              status:existingAttendance.status,
               message: `${employeeName} has already checked in at: ${formatTime(
                 convertToPST(existingAttendance.checkIn).toString()
               )} and checked out at: ${formatTime(
@@ -73,12 +77,14 @@ const attendanceModel = prisma.$extends({
         if (existingAttendance && existingAttendance.status === "ABSENT") {
           return {
             success: true,
+            status:existingAttendance.status,
             message: `${employeeName} is absent.`,
           };
         }
 
         return {
           success: true,
+          status : null,
           message: `${employeeName} has not checked in yet! Do you want to mark attendance for ${employeeName} as ${status}?`,
         };
       },

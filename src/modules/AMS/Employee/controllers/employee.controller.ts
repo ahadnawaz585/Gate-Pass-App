@@ -180,7 +180,7 @@ class EmployeeController extends BaseController<EmployeeService> {
   async searchEmployees(req: Request, res: Response) {
     const { searchTerm, page, pageSize } = req.body;
     const operation = () =>
-      this.service.searchEmployee(searchTerm, page, pageSize);
+    this.service.searchEmployee(searchTerm, page, pageSize);
     const successMessage = "Employees retrieved successfully!";
     const errorMessage = "Error retrieving employees:";
     this.handleRequest(operation, successMessage, errorMessage, res);

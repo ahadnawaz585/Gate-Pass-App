@@ -61,16 +61,16 @@ class LeaveReqController extends BaseController<LeaveReqService> {
   }
 
   async updateLeaveRequest(req: Request, res: Response) {
-    const { requestId, data } = req.body;
-    const operation = () => this.service.updateLeaveRequest(requestId, data);
+    const { id, data } = req.body;
+    const operation = () => this.service.updateLeaveRequest(id, data);
     const successMessage = "Leave request updated successfully!";
     const errorMessage = "Error updating leave request:";
     this.handleRequest(operation, successMessage, errorMessage, res);
   }
 
   async deleteLeaveRequest(req: Request, res: Response) {
-    const { requestId } = req.body;
-    const operation = () => this.service.deleteLeaveRequest(requestId);
+    const { id } = req.body;
+    const operation = () => this.service.deleteLeaveRequest(id);
     const successMessage = "Leave request deleted successfully!";
     const errorMessage = "Error deleting leave request:";
     this.handleRequest(operation, successMessage, errorMessage, res);
@@ -93,8 +93,8 @@ class LeaveReqController extends BaseController<LeaveReqService> {
   }
 
   async updateLeaveRequestStatus(req: Request, res: Response) {
-    const { requestId, status } = req.body;
-    const operation = () => this.service.updateLeaveRequestStatus(requestId, status);
+    const { id, status } = req.body;
+    const operation = () => this.service.updateLeaveRequestStatus(id, status);
     const successMessage = "Leave request status updated successfully!";
     const errorMessage = "Error updating leave request status:";
     this.handleRequest(operation, successMessage, errorMessage, res);

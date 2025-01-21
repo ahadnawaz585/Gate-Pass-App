@@ -77,7 +77,7 @@ class AttendanceController extends BaseController<AttendanceService> {
     const result = await this.service.checkAttendance(employeeId,status,date);
     return res
       .status(201)
-      .json({ message: result.message, success:result.success });
+      .json({ message: result.message, success:result.success ,status:result.status});
   } catch (error) {
     console.error("Error creating attendance:", error);
     return res.status(500).json({ message: "Error creating attendance." });

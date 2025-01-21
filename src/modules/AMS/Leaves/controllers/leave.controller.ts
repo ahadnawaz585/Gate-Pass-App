@@ -31,34 +31,34 @@ class LeaveController extends BaseController<LeaveService> {
   }
 
   async updateLeaveConfiguration(req: Request, res: Response) {
-    const { configId, leaveConfigData } = req.body;
+    const { id, leaveConfigData } = req.body;
     const operation = () =>
-      this.service.updateLeaveConfiguration(configId, leaveConfigData);
+      this.service.updateLeaveConfiguration(id, leaveConfigData);
     const successMessage = "Leave configuration updated successfully!";
     const errorMessage = "Error updating leave configuration:";
     this.handleRequest(operation, successMessage, errorMessage, res);
   }
 
   async deleteLeaveConfiguration(req: Request, res: Response) {
-    const { configId } = req.body;
-    const operation = () => this.service.deleteLeaveConfiguration(configId);
+    const { id } = req.body;
+    const operation = () => this.service.deleteLeaveConfiguration(id);
     const successMessage = "Leave configuration deleted successfully!";
     const errorMessage = "Error deleting leave configuration:";
     this.handleRequest(operation, successMessage, errorMessage, res);
   }
 
   async restoreLeaveConfiguration(req: Request, res: Response) {
-    const { configId } = req.body;
-    const operation = () => this.service.restoreLeaveConfiguration(configId);
+    const { id } = req.body;
+    const operation = () => this.service.restoreLeaveConfiguration(id);
     const successMessage = "Leave configuration restored successfully!";
     const errorMessage = "Error restoring leave configuration:";
     this.handleRequest(operation, successMessage, errorMessage, res);
   }
 
   async getLeaveConfigurationById(req: Request, res: Response) {
-    const { configId } = req.body;
+    const { id } = req.body;
     const operation = () =>
-      this.service.getLeaveConfigurationById(configId);
+      this.service.getLeaveConfigurationById(id);
     const successMessage = "Leave configuration retrieved successfully!";
     const errorMessage = "Error retrieving leave configuration:";
     this.handleRequest(operation, successMessage, errorMessage, res);
