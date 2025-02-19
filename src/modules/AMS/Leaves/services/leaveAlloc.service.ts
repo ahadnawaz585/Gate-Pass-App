@@ -49,6 +49,12 @@ class LeaveAllocService {
     return await leaveAllocModel.leaveAllocation.gpFindById(allocId);
   }
 
+  async getLeaveAllocationByEmployeeId(
+    employeeId: string
+  ) {
+    return await leaveAllocModel.leaveAllocation.gpFindByEmployeeId(employeeId);
+  }
+
   // Get leave allocations by employee ID
   async getLeaveAllocationsByEmployeeId(
     employeeId: string

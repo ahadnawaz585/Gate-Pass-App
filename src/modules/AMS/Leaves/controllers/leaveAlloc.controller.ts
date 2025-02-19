@@ -91,6 +91,14 @@ class LeaveAllocController extends BaseController<LeaveAllocService> {
     const errorMessage = "Error retrieving leave allocation:";
     this.handleRequest(operation, successMessage, errorMessage, res);
   }
+
+  async getLeaveAllocationByEmployeeId(req: Request, res: Response) {
+    const { employeeId } = req.body;
+    const operation = () => this.service.getLeaveAllocationById(employeeId);
+    const successMessage = "Leave allocation retrieved successfully!";
+    const errorMessage = "Error retrieving leave allocation:";
+    this.handleRequest(operation, successMessage, errorMessage, res);
+  }
 }
 
 export default LeaveAllocController;

@@ -4,6 +4,16 @@ import prisma from "../../../../core/models/base.model";
 const leaveAllocModel = prisma.$extends({
   model: {
     leaveAllocation: {
+      async gpFindByEmployeeId(this: any, id: string) {
+        const data = await prisma.leaveAllocation.findMany({
+          where: {
+            employeeId: id,
+            isDeleted: null,
+          },
+        });
+
+        return data;
+      },
       // Method to get leave allocations by employee ID
       async gpFindManyByEmployeeId(employeeId: string): Promise<LeaveAllocation[]> {
         return prisma.leaveAllocation.findMany({

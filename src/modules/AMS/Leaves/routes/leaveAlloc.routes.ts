@@ -24,6 +24,7 @@ class LeaveAllocRoutes {
     this.router.post('/delete', this.controller.deleteLeaveAllocation.bind(this.controller));
     this.router.post('/restore', this.controller.restoreLeaveAllocation.bind(this.controller));
     this.router.get('/getById', this.controller.getLeaveAllocationById.bind(this.controller));
+    this.router.post('/getByEmployeeId', this.controller.getLeaveAllocationByEmployeeId.bind(this.controller));
   }
 
   public getRouter(): Router {
