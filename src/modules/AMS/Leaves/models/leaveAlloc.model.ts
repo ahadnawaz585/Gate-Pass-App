@@ -10,12 +10,25 @@ const leaveAllocModel = prisma.$extends({
             employeeId: id,
             isDeleted: null,
           },
+          select: {
+            allocationEndDate: true,
+            allocationStartDate: true,
+            note: true,
+            assignedDays: true,
+            leaveConfig: {
+              select: {
+                name: true, // Only fetch the `name` field from leaveConfig
+              },
+            },
+          },
         });
 
         return data;
       },
       // Method to get leave allocations by employee ID
-      async gpFindManyByEmployeeId(employeeId: string): Promise<LeaveAllocation[]> {
+      async gpFindManyByEmployeeId(
+        employeeId: string
+      ): Promise<LeaveAllocation[]> {
         return prisma.leaveAllocation.findMany({
           where: {
             employeeId,

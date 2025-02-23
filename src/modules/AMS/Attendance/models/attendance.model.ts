@@ -88,6 +88,23 @@ const attendanceModel = prisma.$extends({
           message: `${employeeName} has not checked in yet! Do you want to mark attendance for ${employeeName} as ${status}?`,
         };
       },
+
+      async getSpecificAttendances(type:any,employeeId:string){
+        console.log(type);
+        const data = await prisma.attendance.findMany({
+          where: {
+            employeeId:employeeId,
+            status:type,
+            isDeleted: null
+          },
+          select:{
+            date:true
+          }
+        });
+
+        return data;
+      },
+
       async markAttendance(attendanceData: Attendance) {
         // Convert current time to Pakistan Standard Time
         const nowInPST = new Date().toLocaleString("en-US", {

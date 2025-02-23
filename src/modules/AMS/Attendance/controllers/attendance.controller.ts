@@ -55,6 +55,16 @@ class AttendanceController extends BaseController<AttendanceService> {
     this.handleRequest(operation, successMessage, errorMessage, res);
   }
 
+  async getSpecificTypeAttendances(req: Request, res: Response) {
+    const {type,employeeId} = req.body;
+    const operation = () => this.service.getSpecifcAttendances(type,employeeId); 
+    const successMessage = `Total Attendances count retrieved successfully for type: ${type}!`;
+    const errorMessage = `Error retrieving total Attendances count for type: ${type}:`;
+
+    this.handleRequest(operation, successMessage, errorMessage, res);
+}
+
+
   async getTotalAttendances(req: Request, res: Response) {
     const operation = () => this.service.getTotalAttendances();
     const successMessage = "Total Attendances count retrieved successfully!";

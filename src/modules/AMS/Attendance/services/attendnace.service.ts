@@ -66,6 +66,10 @@ class AttendanceService {
     return await attendanceModel.attendance.gpFindById(attendanceId);
   }
 
+  async getSpecifcAttendances(type:any,employeeId:any) {
+    return await attendanceModel.attendance.getSpecificAttendances(type,employeeId);
+  }
+
   async getTotalAttendances(): Promise<number> {
     return await attendanceModel.attendance.gpCount();
   }
