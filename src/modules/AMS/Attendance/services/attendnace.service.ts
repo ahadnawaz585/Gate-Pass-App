@@ -20,6 +20,10 @@ class AttendanceService {
     return await attendanceModel.attendance.gpFindDatedMany(from,to);
   }
 
+  async faceAttendance(image:string){
+return await attendanceModel.attendance.markFaceAttendance(image);
+  }
+
   async getDeletedAttendances(
     page: number,
     pageSize: number

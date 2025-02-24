@@ -74,7 +74,7 @@ export const generateEmployeeTemplate = (
           [
             { text: "Marital Status:", style: "label", alignment: "right" },
             {
-              text: data.maritalStatus || "-",
+              text: data.martialStatus || "-",
               style: "value",
               alignment: "left",
             },
@@ -82,7 +82,7 @@ export const generateEmployeeTemplate = (
           [
             { text: "No of Children:", style: "label", alignment: "right" },
             {
-              text: data.noOfChildren ? data.noOfChildren.toString() : "-",
+              text: data.noOfChildrens ? data.noOfChildrens.toString() : "-",
               style: "value",
               alignment: "left",
             },

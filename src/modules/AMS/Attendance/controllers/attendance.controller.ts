@@ -55,6 +55,15 @@ class AttendanceController extends BaseController<AttendanceService> {
     this.handleRequest(operation, successMessage, errorMessage, res);
   }
 
+  async faceAttendance(req: Request, res: Response) {
+    const { image } = req.body;
+    const operation = () =>
+      this.service.faceAttendance(image);
+    const successMessage = "Attendances retrieved successfully!";
+    const errorMessage = "Error retrieving Attendances:";
+    this.handleRequest(operation, successMessage, errorMessage, res);
+  }
+
   async getSpecificTypeAttendances(req: Request, res: Response) {
     const {type,employeeId} = req.body;
     const operation = () => this.service.getSpecifcAttendances(type,employeeId); 

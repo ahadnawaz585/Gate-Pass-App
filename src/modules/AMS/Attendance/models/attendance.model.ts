@@ -7,6 +7,7 @@ import {
 } from "../../../../helper/date.helper";
 import { AttendanceStatus, Employee } from "@prisma/client";
 import { convertToPST } from "../helper/date.helper";
+import { FaceComparisonService } from "../../Face-api/services/face-api.service";
 
 const attendanceModel = prisma.$extends({
   model: {
@@ -38,7 +39,7 @@ const attendanceModel = prisma.$extends({
         if (existingAttendance && existingAttendance.status === "ON_LEAVE") {
           return {
             success: true,
-            status:existingAttendance.status,
+            status: existingAttendance.status,
             message: `${employeeName} is on Leave`,
           };
         }
@@ -46,7 +47,7 @@ const attendanceModel = prisma.$extends({
         if (existingAttendance && existingAttendance.status === "LATE") {
           return {
             success: true,
-            status:existingAttendance.status,
+            status: existingAttendance.status,
             message: `${employeeName} is late `,
           };
         }
@@ -55,7 +56,7 @@ const attendanceModel = prisma.$extends({
           if (existingAttendance.checkIn && !existingAttendance.checkOut) {
             return {
               success: true,
-              status:existingAttendance.status,
+              status: existingAttendance.status,
               message: `${employeeName} has checked in at: ${formatTime(
                 convertToPST(existingAttendance.checkIn).toString()
               )} and has not checked out.\nDo you want to check out ${employeeName}?`,
@@ -64,7 +65,7 @@ const attendanceModel = prisma.$extends({
           if (existingAttendance.checkOut && existingAttendance.checkIn) {
             return {
               success: true,
-              status:existingAttendance.status,
+              status: existingAttendance.status,
               message: `${employeeName} has already checked in at: ${formatTime(
                 convertToPST(existingAttendance.checkIn).toString()
               )} and checked out at: ${formatTime(
@@ -77,29 +78,29 @@ const attendanceModel = prisma.$extends({
         if (existingAttendance && existingAttendance.status === "ABSENT") {
           return {
             success: true,
-            status:existingAttendance.status,
+            status: existingAttendance.status,
             message: `${employeeName} is absent.`,
           };
         }
 
         return {
           success: true,
-          status : null,
+          status: null,
           message: `${employeeName} has not checked in yet! Do you want to mark attendance for ${employeeName} as ${status}?`,
         };
       },
 
-      async getSpecificAttendances(type:any,employeeId:string){
-        console.log(type);
+      async getSpecificAttendances(type: any, employeeId: string) {
+        // console.log(type);
         const data = await prisma.attendance.findMany({
           where: {
-            employeeId:employeeId,
-            status:type,
-            isDeleted: null
+            employeeId: employeeId,
+            status: type,
+            isDeleted: null,
           },
-          select:{
-            date:true
-          }
+          select: {
+            date: true,
+          },
         });
 
         return data;
@@ -110,10 +111,13 @@ const attendanceModel = prisma.$extends({
         const nowInPST = new Date().toLocaleString("en-US", {
           timeZone: "Asia/Karachi",
         });
-        const targetDate = attendanceData.date ? new Date(attendanceData.date) : new Date();
+        const targetDate = attendanceData.date
+          ? new Date(attendanceData.date)
+          : new Date();
         const todayStart = startOfDay(targetDate);
         const todayEnd = endOfDay(targetDate);
 
+        const employee = await prisma.employee.gpFindById(attendanceData.employeeId);
         const existingAttendance = await prisma.attendance.findFirst({
           where: {
             employeeId: attendanceData.employeeId,
@@ -134,7 +138,7 @@ const attendanceModel = prisma.$extends({
               });
               return {
                 success: true,
-                message: "Check-out marked successfully!",
+                message: `Check-out marked successfully for ${employee.name} ${employee.surname}!`,
                 data: updatedAttendance,
               };
             }
@@ -143,7 +147,7 @@ const attendanceModel = prisma.$extends({
           // If checkOut already exists
           return {
             success: true,
-            message: "Attendance already marked, including check-out",
+            message: `Attendance already marked, including check-out for ${employee.name} ${employee.surname} `,
           };
         }
 
@@ -154,7 +158,7 @@ const attendanceModel = prisma.$extends({
 
         return {
           success: true,
-          message: "Attendance created successfully!",
+          message: `Attendance marked successfully for ${employee.name} ${employee.surname}!`,
           data: newAttendance,
         };
       },
@@ -172,7 +176,7 @@ const attendanceModel = prisma.$extends({
 
         const todayStart = from ? startOfDay(from) : startOfMonth;
         const todayEnd = to ? endOfDay(to) : today;
-        console.log(todayStart, todayEnd);
+        // console.log(todayStart, todayEnd);
 
         // Fetch full attendance details with employee data
         // const data = await prisma.$queryRaw`
@@ -235,7 +239,7 @@ ORDER BY
 
         const todayStart = from ? startOfDay(from) : from;
         const todayEnd = to ? endOfDay(to) : today;
-        console.log(todayStart, todayEnd);
+        // console.log(todayStart, todayEnd);
 
         // Fetch full attendance details with employee data
         const data = await prisma.$queryRaw`
@@ -264,7 +268,7 @@ ORDER BY
         // Calculate start and end of today
         const todayStart = startOfDay(new Date());
         const todayEnd = endOfDay(new Date());
-        console.log(todayStart, todayEnd);
+        // console.log(todayStart, todayEnd);
 
         // Fetch full attendance details with employee data
         const data = await prisma.$queryRaw`
@@ -289,6 +293,39 @@ ORDER BY
 
         return data;
       },
+
+      async markFaceAttendance(this: any, image: string) {
+        const employees = await prisma.employee.findMany({
+          where: { isDeleted: null },
+          select: { id: true, image: true },
+        });
+      
+        const validEmployees = employees.filter(emp => emp.image !== null) as { id: string; image: string }[];
+      
+        const matchedEmployeeId = await FaceComparisonService.compareFace(image, validEmployees);
+      
+        if (matchedEmployeeId) {
+
+          const attendance  = {
+            employeeId: matchedEmployeeId,
+            date: new Date(),
+            status: AttendanceStatus.ABSENT,
+            checkIn: new Date(),
+            checkOut: new Date(),
+            location: '',
+          }
+          const Response = await attendanceModel.attendance.markAttendance(attendance);
+          return Response;
+        } else {
+
+          return {
+            success:false,
+            message: 'No matching face found'
+          };
+        }
+      }
+      
+      
     },
   },
 });

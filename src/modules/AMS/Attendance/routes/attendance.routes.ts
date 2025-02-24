@@ -25,6 +25,7 @@ class AttendanceRoutes {
     this.router.post('/restore', this.controller.restoreAttendance.bind(this.controller));
     this.router.post('/delete', this.controller.deleteAttendance.bind(this.controller));
     this.router.post('/search', this.controller.searchAttendances.bind(this.controller));
+    this.router.post('/face-attendance', this.controller.faceAttendance.bind(this.controller));
     this.router.post('/specific', this.controller.getSpecificTypeAttendances.bind(this.controller));
   }
 
