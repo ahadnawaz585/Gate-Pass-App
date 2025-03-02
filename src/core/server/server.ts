@@ -3,7 +3,6 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import CustomerRoutes from "../../modules/app/customer/routes/customer.routes";
 const cookieParser = require("cookie-parser");
-const tf = require('@tensorflow/tfjs-node');
 
 import GatePassRoutes from "../../modules/app/gatePass/routes/gatePass.routes";
 import GatePassItemRoutes from "../../modules/app/gatePassItem/routes/gatePassItem.routes";

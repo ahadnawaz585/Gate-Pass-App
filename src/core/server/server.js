@@ -17,7 +17,6 @@ const body_parser_1 = __importDefault(require("body-parser"));
 const cors_1 = __importDefault(require("cors"));
 const customer_routes_1 = __importDefault(require("../../modules/app/customer/routes/customer.routes"));
 const cookieParser = require("cookie-parser");
-const tf = require('@tensorflow/tfjs-node');
 const gatePass_routes_1 = __importDefault(require("../../modules/app/gatePass/routes/gatePass.routes"));
 const gatePassItem_routes_1 = __importDefault(require("../../modules/app/gatePassItem/routes/gatePassItem.routes"));
 const item_routes_1 = __importDefault(require("../../modules/app/item/routes/item.routes"));

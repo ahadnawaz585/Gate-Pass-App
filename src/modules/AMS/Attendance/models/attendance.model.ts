@@ -7,7 +7,7 @@ import {
 } from "../../../../helper/date.helper";
 import { AttendanceStatus, Employee } from "@prisma/client";
 import { convertToPST } from "../helper/date.helper";
-import { FaceComparisonService } from "../../Face-api/services/face-api.service";
+// import { FaceComparisonService } from "../../Face-api/services/face-api.service";
 
 const attendanceModel = prisma.$extends({
   model: {
@@ -302,7 +302,8 @@ ORDER BY
       
         const validEmployees = employees.filter(emp => emp.image !== null) as { id: string; image: string }[];
       
-        const matchedEmployeeId = await FaceComparisonService.compareFace(image, validEmployees);
+        // const matchedEmployeeId = await FaceComparisonService.compareFace(image, validEmployees);
+        const matchedEmployeeId = '';
       
         if (matchedEmployeeId) {
 
