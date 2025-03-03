@@ -227,6 +227,7 @@ model Employee {
   user          User?
   attendances   Attendance[]
   leaveRequests LeaveRequest[]
+  attendanceRequests AttendanceRequest[]
 
   LeaveAllocation LeaveAllocation[]
 }
@@ -268,6 +269,19 @@ model LeaveRequest {
   status     LeaveStatus @default(PENDING)
   image      String? // Optional attachment
   location   String? // Optional location for leave request
+  createdAt  DateTime?   @default(now())
+  updatedAt  DateTime?   @updatedAt
+  isDeleted  DateTime?
+}
+
+model AttendanceRequest {
+  id         String      @id @default(uuid()) @db.VarChar(36)
+  employee   Employee    @relation(fields: [employeeId], references: [id])
+  employeeId String
+  reason     String?
+  status     LeaveStatus @default(PENDING)
+  image      String? 
+  location   String? 
   createdAt  DateTime?   @default(now())
   updatedAt  DateTime?   @updatedAt
   isDeleted  DateTime?
