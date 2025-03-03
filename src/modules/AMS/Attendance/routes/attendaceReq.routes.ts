@@ -23,7 +23,7 @@ class AttendanceReqRoutes {
     this.router.post('/delete', this.controller.deleteAttendanceRequest.bind(this.controller));
     this.router.post('/restore', this.controller.restoreAttendanceRequest.bind(this.controller));
     this.router.post('/updateStatus', this.controller.updateAttendanceRequestStatus.bind(this.controller));
-    this.router.get('/getById', this.controller.getAttendanceRequestById.bind(this.controller));
+    this.router.post('/getById', this.controller.getAttendanceRequestById.bind(this.controller));
   }
 
   public getRouter(): Router {

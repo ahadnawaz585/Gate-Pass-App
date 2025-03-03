@@ -25,6 +25,7 @@ import FeaturePermissionRoutes from "../../modules/rbac/Features/routes/featureP
 import TokenCleanHelper from '../../helper/schedule.helper';
 
 //AMS
+import AttendanceReqRoutes from "../../modules/AMS/Attendance/routes/attendaceReq.routes";
 import AttendanceSchedulerHelper from "../../modules/AMS/Attendance/helper/schedule.helper"
 import EmployeeRoutes from "../../modules/AMS/Employee/routes/employee.routes";
 import AttendanceRoutes from "../../modules/AMS/Attendance/routes/attendance.routes";
@@ -86,6 +87,7 @@ class App {
       //AMS
       EmployeeRoutes,
       LeaveRoutes,
+      AttendanceReqRoutes,
       AttendanceRoutes
     ];
     

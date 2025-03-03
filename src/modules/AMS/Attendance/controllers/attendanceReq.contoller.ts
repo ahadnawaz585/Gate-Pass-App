@@ -54,8 +54,8 @@ class AttendanceReqController extends BaseController<AttendanceReqService> {
   }
 
   async getAttendanceRequestById(req: Request, res: Response) {
-    const { requestId } = req.body;
-    const operation = () => this.service.getAttendanceRequestById(requestId);
+    const { id } = req.body;
+    const operation = () => this.service.getAttendanceRequestById(id);
     const successMessage = "Attendance request retrieved successfully!";
     const errorMessage = "Error retrieving attendance request:";
     this.handleRequest(operation, successMessage, errorMessage, res);

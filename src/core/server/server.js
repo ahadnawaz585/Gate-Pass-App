@@ -35,6 +35,7 @@ const userRole_routes_1 = __importDefault(require("../../modules/rbac/user/route
 const featurePermission_routes_1 = __importDefault(require("../../modules/rbac/Features/routes/featurePermission.routes"));
 const schedule_helper_1 = __importDefault(require("../../helper/schedule.helper"));
 //AMS
+const attendaceReq_routes_1 = __importDefault(require("../../modules/AMS/Attendance/routes/attendaceReq.routes"));
 const schedule_helper_2 = __importDefault(require("../../modules/AMS/Attendance/helper/schedule.helper"));
 const employee_routes_1 = __importDefault(require("../../modules/AMS/Employee/routes/employee.routes"));
 const attendance_routes_1 = __importDefault(require("../../modules/AMS/Attendance/routes/attendance.routes"));
@@ -87,6 +88,7 @@ class App {
             //AMS
             employee_routes_1.default,
             leave_routes_1.default,
+            attendaceReq_routes_1.default,
             attendance_routes_1.default
         ];
         const openRoutes = [auth_routes_1.default];
