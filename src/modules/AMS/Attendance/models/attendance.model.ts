@@ -131,7 +131,7 @@ const attendanceModel = prisma.$extends({
         if (existingAttendance) {
           // If attendance already exists, mark it as a checkout
           if (existingAttendance.checkIn) {
-            if (!existingAttendance.checkOut) {
+            // if (!existingAttendance.checkOut) {
               const updatedAttendance = await prisma.attendance.update({
                 where: { id: existingAttendance.id },
                 data: { checkOut: new Date() }, // Checkout time is the current time
@@ -141,7 +141,7 @@ const attendanceModel = prisma.$extends({
                 message: `Check-out marked successfully for ${employee.name} ${employee.surname}!`,
                 data: updatedAttendance,
               };
-            }
+            // }
           }
 
           // If checkOut already exists
