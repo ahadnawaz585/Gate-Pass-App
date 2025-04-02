@@ -67,6 +67,7 @@ exports.features = [
     },
     { name: "login.app.*", label: "Login App", parentFeatureId: "login.*" },
     { name: "login.admin.*", label: "Login Admin", parentFeatureId: "login.*" },
+    { name: "login.quickmark.*", label: "Login Attendance App", parentFeatureId: "login.*" },
     { name: "voucher.*", label: "Voucher (Nav)" },
     { name: "voucher.create.*", parentFeatureId: "voucher.*", label: "Create" },
     { name: "voucher.read.*", parentFeatureId: "voucher.*", label: "Read" },

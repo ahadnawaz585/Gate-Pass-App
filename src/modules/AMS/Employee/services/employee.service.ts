@@ -15,6 +15,10 @@ class EmployeeService {
     return await employeeModel.employee.gpFindFilterMany();
   }
 
+  async getEmployeeByUserId(userId:string){
+return await employeeModel.employee.gpFindByUserId(userId);
+  }
+
   async updateFilePaths(employeeId:string, updatedFilePaths:string[]){
     await employeeModel.employee.updateFilePaths(employeeId,updatedFilePaths);
   }

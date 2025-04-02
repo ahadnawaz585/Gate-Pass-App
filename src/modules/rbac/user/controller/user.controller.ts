@@ -3,7 +3,7 @@ import BaseController from "../../../../core/controllers/base.controller";
 import { User, UserData } from "../types/user";
 import UserService from "../service/user.service";
 import BlackListedTokenService from "../../Token/service/token.service";
-import bcrypt from "bcrypt";
+import bcrypt, { compareSync } from "bcrypt";
 import jwt from "jsonwebtoken";
 import AuthHelper from "../../../../Auth/helper/auth.helper";
 import prisma from "../../../../core/models/base.model";
@@ -11,11 +11,12 @@ import { LoggedInTokens } from "../../Token/types/token";
 import accessModel from "../../Access/models/access.model";
 import { secretKey } from "../../../../environment/environment";
 import AccessService from "../../Access/service/access.service";
-
+import EmployeeService from "../../../AMS/Employee/services/employee.service";
 class UserController extends BaseController<UserService> {
   protected service = new UserService();
   protected tokenService = new BlackListedTokenService();
   protected accessService = new AccessService();
+  protected employeeService = new EmployeeService();
 
   async getUsers(req: Request, res: Response) {
     let operation = () => this.service.getUsers();
@@ -24,7 +25,7 @@ class UserController extends BaseController<UserService> {
     this.handleRequest(operation, successMessage, errorMessage, res);
   }
 
-  async getNonAssociatedUsers(req:Request,res:Response){
+  async getNonAssociatedUsers(req: Request, res: Response) {
     let operation = () => this.service.getNonAssociatedUsers();
     let successMessage = "User  retrieved successfully!";
     let errorMessage = "Error retrieving users:";
@@ -173,7 +174,7 @@ class UserController extends BaseController<UserService> {
 
   async loginUser(req: Request, res: Response) {
     let { username, password, rememberMe, platform } = req.body;
-    console.log({ username, password, rememberMe, platform });
+console.log( { username, password, rememberMe, platform } );
     let user: User | null = await this.service.getUserByUsername(username);
     const roleIds: string[] = await accessModel.role.getRoleIds(user?.id || "");
     // const isAdmin = roleIds.includes("2d9c89e7-466d-4b1c-b1b3-3ef5be815ed4");
@@ -182,7 +183,7 @@ class UserController extends BaseController<UserService> {
     }
 
     const expiresIn = rememberMe ? "6M" : "24h";
-
+    let employee: any = null;
     let isAllowded: boolean = false;
 
     if (platform == "Mobile") {
@@ -195,9 +196,16 @@ class UserController extends BaseController<UserService> {
         user?.id || "",
         "login.admin.*"
       );
+    } else if (platform == "Attendance App") {
+      isAllowded = await this.accessService.checkPermission(
+        user?.id || "",
+        "login.quickmark.*"
+      );
+      if (user.id) {
+        employee = await this.employeeService.getEmployeeByUserId(user.id);
+      }
     }
 
-  console.log(isAllowded);
     if (isAllowded) {
       let token: string | null = jwt.sign({ userId: user.id }, secretKey, {
         expiresIn,
@@ -233,9 +241,12 @@ class UserController extends BaseController<UserService> {
         await prisma.loggedInUsers.gpCreate(data);
       }
 
+      if (employee) {
+        return res.json({ token,employee});
+      }
+
       return res.json({ token });
     } else {
-
       return res
         .status(401)
         .json({ message: "You don't have permission to login ! contact ERP" });

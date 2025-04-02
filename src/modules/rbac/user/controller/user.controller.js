@@ -22,12 +22,14 @@ const base_model_1 = __importDefault(require("../../../../core/models/base.model
 const access_model_1 = __importDefault(require("../../Access/models/access.model"));
 const environment_1 = require("../../../../environment/environment");
 const access_service_1 = __importDefault(require("../../Access/service/access.service"));
+const employee_service_1 = __importDefault(require("../../../AMS/Employee/services/employee.service"));
 class UserController extends base_controller_1.default {
     constructor() {
         super(...arguments);
         this.service = new user_service_1.default();
         this.tokenService = new token_service_1.default();
         this.accessService = new access_service_1.default();
+        this.employeeService = new employee_service_1.default();
     }
     getUsers(req, res) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -209,6 +211,7 @@ class UserController extends base_controller_1.default {
                 return res.status(401).json({ message: "Invalid username or password" });
             }
             const expiresIn = rememberMe ? "6M" : "24h";
+            let employee = null;
             let isAllowded = false;
             if (platform == "Mobile") {
                 isAllowded = yield this.accessService.checkPermission((user === null || user === void 0 ? void 0 : user.id) || "", "login.app.*");
@@ -216,7 +219,12 @@ class UserController extends base_controller_1.default {
             else if (platform == "Admin") {
                 isAllowded = yield this.accessService.checkPermission((user === null || user === void 0 ? void 0 : user.id) || "", "login.admin.*");
             }
-            console.log(isAllowded);
+            else if (platform == "Attendance App") {
+                isAllowded = yield this.accessService.checkPermission((user === null || user === void 0 ? void 0 : user.id) || "", "login.quickmark.*");
+                if (user.id) {
+                    employee = yield this.employeeService.getEmployeeByUserId(user.id);
+                }
+            }
             if (isAllowded) {
                 let token = jsonwebtoken_1.default.sign({ userId: user.id }, environment_1.secretKey, {
                     expiresIn,
@@ -247,6 +255,9 @@ class UserController extends base_controller_1.default {
                 };
                 if (token != null) {
                     yield base_model_1.default.loggedInUsers.gpCreate(data);
+                }
+                if (employee) {
+                    return res.json({ token, employee });
                 }
                 return res.json({ token });
             }
