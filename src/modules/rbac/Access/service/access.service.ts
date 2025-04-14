@@ -16,6 +16,10 @@ class AccessService {
   async checkPermission(id: string, feature: string): Promise<boolean> {
     return await accessModel.user.checkUserPermission(id, feature);
   }
+
+  async checkPermissions(id: string, features: string[]): Promise<any> {
+    return await accessModel.user.checkUserPermissions(id, features);
+  }
 }
 
 export default AccessService;

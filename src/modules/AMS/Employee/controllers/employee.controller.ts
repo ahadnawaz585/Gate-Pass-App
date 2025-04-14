@@ -11,23 +11,22 @@ class EmployeeController extends BaseController<EmployeeService> {
   private excelUtility = new EmployeeExcelUtility();
 
   async getAllEmployees(req: Request, res: Response) {
-    const param = req.query.filter as string; 
+    const param = req.query.filter as string;
 
     const operation = async () => {
-        if (param) {
-            console.log(`Query parameter provided: ${param}`);
-            return await this.service.getFilterEmployees(); 
-        } else {
-            console.log("No query parameter provided.");
-            return await this.service.getAllEmployees();
-        }
+      if (param) {
+        console.log(`Query parameter provided: ${param}`);
+        return await this.service.getFilterEmployees();
+      } else {
+        console.log("No query parameter provided.");
+        return await this.service.getAllEmployees();
+      }
     };
 
     const successMessage = "Employees retrieved successfully!";
     const errorMessage = "Error retrieving employees:";
     this.handleRequest(operation, successMessage, errorMessage, res);
-}
-
+  }
 
   async deleteFiles(req: Request, res: Response) {
     const { employeeId, fileName } = req.body;
@@ -51,12 +50,24 @@ class EmployeeController extends BaseController<EmployeeService> {
     const data = await this.service.getAllEmployees();
     const result = await this.excelUtility.create(data);
 
-    res.setHeader('Content-Disposition', `attachment; filename="${result.fileName}"`);
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${result.fileName}"`
+    );
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
     res.send(result.wbout); // Ensure this is binary data (e.g., a Buffer or equivalent)
-}
+  }
 
-
+ async getEmployeeByUserId(req: Request, res: Response) {
+    const { userId } = req.body;
+    let successMessage = "Files retrieved successfully!";
+    let errorMessage = "Error retrieving files:";
+    const operation = () => this.service.getEmployeeByUserId(userId);
+    await this.handleRequest(operation, successMessage, errorMessage, res);
+  }
 
   async getEmployeeCard(req: Request, res: Response) {
     const { id } = req.body;
@@ -180,7 +191,7 @@ class EmployeeController extends BaseController<EmployeeService> {
   async searchEmployees(req: Request, res: Response) {
     const { searchTerm, page, pageSize } = req.body;
     const operation = () =>
-    this.service.searchEmployee(searchTerm, page, pageSize);
+      this.service.searchEmployee(searchTerm, page, pageSize);
     const successMessage = "Employees retrieved successfully!";
     const errorMessage = "Error retrieving employees:";
     this.handleRequest(operation, successMessage, errorMessage, res);

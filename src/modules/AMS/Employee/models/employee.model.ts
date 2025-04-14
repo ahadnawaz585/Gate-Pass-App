@@ -6,7 +6,6 @@ import fs from "fs";
 const employeeModel = prisma.$extends({
   model: {
     employee: {
-
       async gpFindFilterMany(this: any) {
         const data = await this.findMany({
           where: {
@@ -36,10 +35,45 @@ const employeeModel = prisma.$extends({
             name: true,
           },
         });
-      
-       return data;
+
+        return data;
       },
-      
+
+     async gpFindEmployeeByUserId(this:any,userId:string){
+        const data = await prisma.user.findUnique({
+          where: {
+            id: userId,
+            isDeleted: null,
+          },
+        });
+
+        if (data?.employeeId) {
+          const employee = await prisma.employee.gpFindById(data?.employeeId);
+
+          return employee;
+        }
+
+        return null;
+      },
+      async gpFindByUserId(this: any, userId: string) {
+        const data = await prisma.user.findUnique({
+          where: {
+            id: userId,
+            isDeleted: null,
+          },
+          select: {
+            employeeId: true,
+          },
+        });
+
+        if (data?.employeeId) {
+          const employee = await prisma.employee.gpFindById(data?.employeeId);
+
+          return employee;
+        }
+
+        return null;
+      },
 
       async gpSoftDelete(id: string) {
         await prisma.employee.gpSoftDelete(id);
@@ -51,7 +85,6 @@ const employeeModel = prisma.$extends({
           },
         });
 
-        
         if (user) {
           const newUser = { ...user, employeeId: null };
           await prisma.user.gpUpdate(user?.id, newUser);

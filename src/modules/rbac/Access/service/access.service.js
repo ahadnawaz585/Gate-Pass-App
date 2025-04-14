@@ -34,5 +34,10 @@ class AccessService {
             return yield access_model_1.default.user.checkUserPermission(id, feature);
         });
     }
+    checkPermissions(id, features) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield access_model_1.default.user.checkUserPermissions(id, features);
+        });
+    }
 }
 exports.default = AccessService;
