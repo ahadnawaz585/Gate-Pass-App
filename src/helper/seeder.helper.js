@@ -53,18 +53,20 @@ const item_service_1 = __importDefault(require("../modules/app/item/services/ite
 const user_service_1 = __importDefault(require("../modules/rbac/user/service/user.service"));
 const feature_service_1 = __importDefault(require("../modules/rbac/Features/service/feature.service"));
 const base_model_1 = __importDefault(require("../core/models/base.model"));
+const employee_service_1 = __importDefault(require("../modules/AMS/Employee/services/employee.service"));
 class SeederHelper {
     constructor() {
         this.userService = new user_service_1.default();
         this.customerService = new customer_service_1.default();
         this.itemService = new item_service_1.default();
+        this.employeeService = new employee_service_1.default();
         this.appFeaturesService = new feature_service_1.default();
     }
     Seeder() {
         return __awaiter(this, void 0, void 0, function* () {
             yield this.gpCreateFeatures();
-            // const filePath = path.join(__dirname, "/seeder/seeder.xlsx");
-            // this.populateCustomer(filePath);
+            const filePath = path.join(__dirname, "/seeder/users.xlsx");
+            this.populateUsers(filePath);
             // this.populateItem(filePath);
             this.gpCreateDefaultUser();
         });
@@ -147,6 +149,85 @@ class SeederHelper {
                 console.log("Error reading the workbook:", error);
                 console.log("Problematic dataset:", dataArray);
             }
+        });
+    }
+    populateUsers(filePath) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const workbook = new Excel.Workbook();
+            let dataArray = [];
+            try {
+                yield workbook.xlsx.readFile(filePath);
+                console.log("in Seeder", filePath);
+                for (const sheet of workbook.worksheets) {
+                    if (sheet.name === "users") {
+                        console.log(`Processing Sheet ${sheet.id}: ${sheet.name}`);
+                        const dataRows = sheet.getRows(2, sheet.rowCount) || [];
+                        console.log(`Number of rows in sheet "${sheet.name}": ${dataRows.length}`);
+                        dataArray = dataRows
+                            .map((row, index) => {
+                            var _a, _b, _c;
+                            const id = (_a = row.getCell("A")) === null || _a === void 0 ? void 0 : _a.value;
+                            const username = (_b = row.getCell("B")) === null || _b === void 0 ? void 0 : _b.value;
+                            let password = (_c = row.getCell("C")) === null || _c === void 0 ? void 0 : _c.value;
+                            // Convert password to string and handle edge cases
+                            if (password != null && typeof password !== "string") {
+                                password = String(password); // Cast numbers or other types to string
+                            }
+                            // Log raw values for debugging
+                            console.log(`Row ${index + 2} raw: id=${id}, username=${username}, password=${password}, passwordType=${typeof password}`);
+                            // Validate id, username, and password
+                            if (!id ||
+                                !username ||
+                                typeof password !== "string" ||
+                                password.trim() === "") {
+                                console.log(`Invalid data in row ${index + 2}: id=${id}, username=${username}, password=${password}`);
+                                return null;
+                            }
+                            return {
+                                id,
+                                username,
+                                password,
+                            };
+                        })
+                            .filter((item) => item !== null);
+                        console.log(`Number of items to create in the database for sheet "${sheet.name}": ${dataArray.length}`);
+                        console.log("Processed dataArray:", dataArray);
+                        yield this.createUsers(dataArray);
+                        console.log(`Database populated successfully from sheet "${sheet.name}".`);
+                    }
+                    else {
+                        console.log(`Skipping sheet "${sheet.name}".`);
+                    }
+                }
+            }
+            catch (error) {
+                console.error("Error reading the workbook:", error);
+                console.log("Problematic dataset:", dataArray);
+            }
+        });
+    }
+    createUsers(data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            for (const user of data) {
+                try {
+                    const userToCreate = {
+                        username: user.username,
+                        password: user.password,
+                        userRole: [],
+                        userGroup: [],
+                    };
+                    const createdUser = yield this.userService.createUsers(userToCreate);
+                    const employeeUserId = {
+                        userId: createdUser.id,
+                    };
+                    yield this.employeeService.updateEmployee(user.id, employeeUserId);
+                    console.log(`User ${user.username} created and employee updated.`);
+                }
+                catch (error) {
+                    console.error(`Error processing user ${user.username}:`, error);
+                }
+            }
+            console.log("All users processed.");
         });
     }
     populateItem(filePath) {

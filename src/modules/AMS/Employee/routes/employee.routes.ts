@@ -66,6 +66,7 @@ class EmployeeRoutes {
     ]), this.controller.updateFiles.bind(this.controller));
     this.router.post('/getCard',this.controller.getEmployeeCard.bind(this.controller));
     this.router.get('/getExcel',this.controller.getEmployeeExcel.bind(this.controller));
+    this.router.post('/getByUserId',this.controller.getEmployeeByUserId.bind(this.controller));
     this.router.post('/files',this.controller.getFiles.bind(this.controller));
     this.router.post('/filesDel',this.controller.deleteFiles.bind(this.controller));
   }

@@ -168,4 +168,99 @@ export const features: AppFeature[] = [
   // #   parentFeatureId: "ledger.report.*",
   // #   label: "Report Print",
   // # },
+
+
+  //App modules
+  { name: "appModules.*", label: "App Modules" },
+  { name: "appModules.quickPass.*", parentFeatureId: "appModules.*", label: "Quick Pass" },
+  { name: "appModules.quickMark.*", parentFeatureId: "appModules.*", label: "Quick Mark" },
+  { name: "appModules.accessControl.*", parentFeatureId: "appModules.*", label: "Access Control" },
+  
+  
+
+  //employee
+  { name: "employee.*", label: "Employee (Nav)" },
+  { name: "employee.create.*", parentFeatureId: "employee.*", label: "Create" },
+  { name: "employee.read.*", parentFeatureId: "employee.*", label: "Read" },
+  { name: "employee.update.*", parentFeatureId: "employee.*", label: "Update" },
+  { name: "employee.restore.*", parentFeatureId: "employee.*", label: "Restore" },
+  {
+    name: "employee.attendance.*",
+    parentFeatureId: "employee.*",
+    label: "Employee Attendance",
+  },
+  {
+    name: "employee.leaves.*",
+    parentFeatureId: "employee.*",
+    label: "Employee Leaves",
+  },
+  {
+    name: "employee.files.*",
+    parentFeatureId: "employee.*",
+    label: "Employee Files",
+  },
+  {
+    name: "employee.timetable.*",
+    parentFeatureId: "employee.*",
+    label: "Employee Time Table",
+  },
+  { name: "employee.delete.*", parentFeatureId: "employee.*", label: "Delete" },
+  { name: "employee.pdf.*", parentFeatureId: "employee.*", label: "Print" },
+  { name: "employee.excel.*", parentFeatureId: "employee.*", label: "Excel" },
+
+  //attendance
+  { name: "attendance.*", label: "Attendance (Nav)" },
+{ name: "attendance.markAttendance.*", parentFeatureId: "attendance.*", label: "Attendance Marking" },
+{ name: "attendance.faceScanning.*", parentFeatureId: "attendance.*", label: "Face Attendance" },
+{ name: "attendance.physicalScanner.*", parentFeatureId: "attendance.*", label: "Physical Scanner Attendance" },
+{ name: "attendance.qrScanner.*", parentFeatureId: "attendance.*", label: "QR Scanner Attendance" },
+{ name: "attendance.manualAttendance.*", parentFeatureId: "attendance.*", label: "Manual Attendance" },
+{ name: "attendance.filter.*", parentFeatureId: "attendance.*", label: "Filter Attendance" },
+{ name: "attendance.update.*", parentFeatureId: "attendance.*", label: "Update Attendance" },
+
+// attedanceReq
+{ name: "attendanceReq.*", label: "Attendance Req (Nav)" },
+{ name: "attendanceReq.create.*", parentFeatureId: "attendanceReq.*", label: "Create" },
+{ name: "attendanceReq.read.*", parentFeatureId: "attendanceReq.*", label: "Read" },
+{ name: "attendanceReq.update.*", parentFeatureId: "attendanceReq.*", label: "Update" },
+{ name: "attendanceReq.restore.*", parentFeatureId: "attendanceReq.*", label: "Restore" },
+
+//leave
+{ name: "leave.*", label: "Leave (Nav)" },
+{ name: "leave.req.*", parentFeatureId: "leave.*", label: "Leave Request Tab" },
+{ name: "leave.alloc.*", parentFeatureId: "leave.*", label: "Leave Allocation Tab" },
+{ name: "leave.config.*", parentFeatureId: "leave.*", label: "Leave Config Tab" },
+
+//leaveReq
+{ name: "leaveReq.*", label: "Leave Req " },
+{ name: "leaveReq.create.*", parentFeatureId: "leaveReq.*", label: "Create" },
+{ name: "leaveReq.read.*", parentFeatureId: "leaveReq.*", label: "Read" },
+{ name: "leaveReq.update.*", parentFeatureId: "leaveReq.*", label: "Update" },
+{ name: "leaveReq.restore.*", parentFeatureId: "leaveReq.*", label: "Restore" },
+
+//leave Alloc
+{ name: "leaveAlloc.*", label: "Leave Allocation" },
+{ name: "leaveAlloc.create.*", parentFeatureId: "leaveAlloc.*", label: "Create" },
+{ name: "leaveAlloc.read.*", parentFeatureId: "leaveAlloc.*", label: "Read" },
+{ name: "leaveAlloc.update.*", parentFeatureId: "leaveAlloc.*", label: "Update" },
+{ name: "leaveAlloc.restore.*", parentFeatureId: "leaveAlloc.*", label: "Restore" },
+
+//leave Config
+{ name: "leaveConfig.*", label: "Leave Configuration" },
+{ name: "leaveConfig.create.*", parentFeatureId: "leaveConfig.*", label: "Create" },
+{ name: "leaveConfig.read.*", parentFeatureId: "leaveConfig.*", label: "Read" },
+{ name: "leaveConfig.update.*", parentFeatureId: "leaveConfig.*", label: "Update" },
+{ name: "leaveConfig.restore.*", parentFeatureId: "leaveConfig.*", label: "Restore" },
+
+// faceRegistration
+{ name: "faceRegistration.*", label: "Face Registration (Nav)" },
+{ name: "faceRegistration.extract.*", parentFeatureId: "faceRegistration.*", label: "Extract Face Descripter" },
+
+
+
+
+
+
+
+
 ];

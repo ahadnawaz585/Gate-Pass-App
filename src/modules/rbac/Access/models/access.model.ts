@@ -144,6 +144,7 @@ const accessModel = prisma.$extends({
           return [];
         }
       },
+
       async checkUserPermission(
         userId: string,
         featureId: string,
@@ -235,6 +236,24 @@ const accessModel = prisma.$extends({
         }
       },
 
+      async checkUserPermissions(
+        userId: string,
+        featureIds: string[]
+      ): Promise<{ [key: string]: boolean }> {
+        const permissionPromises = featureIds.map(async (featureId: string) => {
+  
+          const permission = await this.checkUserPermission(userId, featureId);
+          return { featureId, permission };
+        });
+      
+        const results = await Promise.all(permissionPromises);
+
+        return results.reduce((acc, { featureId, permission }) => {
+          acc[featureId] = permission;
+          return acc;
+        }, {} as { [key: string]: boolean });
+      }
+,
       async isFeatureAllowed(parentId: string, featureId: string) {
         try {
           if (parentId === "58c55d6a-910c-46f8-a422-4604bea6cd15") {

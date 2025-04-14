@@ -223,6 +223,19 @@ const accessModel = prisma.$extends({
                     }
                 });
             },
+            checkUserPermissions(userId, featureIds) {
+                return __awaiter(this, void 0, void 0, function* () {
+                    const permissionPromises = featureIds.map((featureId) => __awaiter(this, void 0, void 0, function* () {
+                        const permission = yield this.checkUserPermission(userId, featureId);
+                        return { featureId, permission };
+                    }));
+                    const results = yield Promise.all(permissionPromises);
+                    return results.reduce((acc, { featureId, permission }) => {
+                        acc[featureId] = permission;
+                        return acc;
+                    }, {});
+                });
+            },
             isFeatureAllowed(parentId, featureId) {
                 return __awaiter(this, void 0, void 0, function* () {
                     var _a, _b;

@@ -87,5 +87,18 @@ class AccessController extends base_controller_1.default {
             }
         });
     }
+    checkPermissions(req, res) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { features } = req.body;
+            let id = auth_helper_1.default.getUserIdFromHeader(req);
+            // let companyId = AuthHelper.getCompanyIdFromHeader(req);
+            if (id) {
+                const operation = () => this.service.checkPermissions(id, features);
+                const successMessage = "Permission checked successfully!";
+                const errorMessage = "Error checking permission:";
+                yield this.handleRequest(operation, successMessage, errorMessage, res);
+            }
+        });
+    }
 }
 exports.default = AccessController;

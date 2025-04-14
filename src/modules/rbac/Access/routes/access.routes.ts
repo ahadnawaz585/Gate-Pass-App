@@ -18,6 +18,7 @@ class AccessRoutes {
     this.router.post('/getPermission', this.controller.getPermission.bind(this.controller));
     // this.router.post('/groupPermission', this.controller.getGroupPermission.bind(this.controller));
     this.router.post('/checkPermission', this.controller.checkPermission.bind(this.controller));
+    this.router.post('/checkPermissions', this.controller.checkPermissions.bind(this.controller));
   }
 
   getRouter(): Router {

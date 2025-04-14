@@ -72,6 +72,18 @@ class AccessController extends BaseController<AccessService> {
       await this.handleRequest(operation, successMessage, errorMessage, res);
     }
   }
+
+  async checkPermissions(req: Request, res: Response) {
+    const { features } = req.body;
+    let id = AuthHelper.getUserIdFromHeader(req);
+    // let companyId = AuthHelper.getCompanyIdFromHeader(req);
+    if (id) {
+      const operation = () => this.service.checkPermissions(id, features);
+      const successMessage = "Permission checked successfully!";
+      const errorMessage = "Error checking permission:";
+      await this.handleRequest(operation, successMessage, errorMessage, res);
+    }
+  }
 }
 
 export default AccessController;

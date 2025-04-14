@@ -6,27 +6,29 @@ import ItemService from "../modules/app/item/services/item.service";
 import UserService from "../modules/rbac/user/service/user.service";
 import AppFeatureService from "../modules/rbac/Features/service/feature.service";
 import prisma from "../core/models/base.model";
+import EmployeeService from "../modules/AMS/Employee/services/employee.service";
 
 class SeederHelper {
   private userService: UserService;
   private customerService: CustomerService;
   private itemService: ItemService;
+  private employeeService: EmployeeService;
   private appFeaturesService: AppFeatureService;
 
   constructor() {
     this.userService = new UserService();
     this.customerService = new CustomerService();
     this.itemService = new ItemService();
+    this.employeeService = new EmployeeService();
     this.appFeaturesService = new AppFeatureService();
   }
 
   async Seeder(): Promise<any> {
     await this.gpCreateFeatures();
-    // const filePath = path.join(__dirname, "/seeder/seeder.xlsx");
-    // this.populateCustomer(filePath);
+    const filePath = path.join(__dirname, "/seeder/users.xlsx");
+    this.populateUsers(filePath);
     // this.populateItem(filePath);
     this.gpCreateDefaultUser();
-
   }
 
   private async gpCreateDefaultUser() {
@@ -53,7 +55,6 @@ class SeederHelper {
       console.log("Features created successfully.");
     }
   }
-
 
   private async populateCustomer(filePath: string) {
     const workbook = new Excel.Workbook();
@@ -120,6 +121,101 @@ class SeederHelper {
       console.log("Error reading the workbook:", error);
       console.log("Problematic dataset:", dataArray);
     }
+  }
+
+  private async populateUsers(filePath: string) {
+    const workbook = new Excel.Workbook();
+    let dataArray: any = [];
+  
+    try {
+      await workbook.xlsx.readFile(filePath);
+      console.log("in Seeder", filePath);
+  
+      for (const sheet of workbook.worksheets) {
+        if (sheet.name === "users") {
+          console.log(`Processing Sheet ${sheet.id}: ${sheet.name}`);
+          const dataRows = sheet.getRows(2, sheet.rowCount) || [];
+  
+          console.log(
+            `Number of rows in sheet "${sheet.name}": ${dataRows.length}`
+          );
+  
+          dataArray = dataRows
+            .map((row, index) => {
+              const id = row.getCell("A")?.value;
+              const username = row.getCell("B")?.value;
+              let password = row.getCell("C")?.value;
+  
+              // Convert password to string and handle edge cases
+              if (password != null && typeof password !== "string") {
+                password = String(password); // Cast numbers or other types to string
+              }
+  
+              // Log raw values for debugging
+              console.log(
+                `Row ${index + 2} raw: id=${id}, username=${username}, password=${password}, passwordType=${typeof password}`
+              );
+  
+              // Validate id, username, and password
+              if (
+                !id ||
+                !username ||
+                typeof password !== "string" ||
+                password.trim() === ""
+              ) {
+                console.log(
+                  `Invalid data in row ${index + 2}: id=${id}, username=${username}, password=${password}`
+                );
+                return null;
+              }
+  
+              return {
+                id,
+                username,
+                password,
+              };
+            })
+            .filter((item) => item !== null);
+  
+          console.log(
+            `Number of items to create in the database for sheet "${sheet.name}": ${dataArray.length}`
+          );
+  
+          console.log("Processed dataArray:", dataArray);
+          await this.createUsers(dataArray);
+          console.log(
+            `Database populated successfully from sheet "${sheet.name}".`
+          );
+        } else {
+          console.log(`Skipping sheet "${sheet.name}".`);
+        }
+      }
+    } catch (error) {
+      console.error("Error reading the workbook:", error);
+      console.log("Problematic dataset:", dataArray);
+    }
+  }
+
+  private async createUsers(data: any) {
+    for (const user of data) {
+      try {
+        const userToCreate:any = {
+          username: user.username,
+          password: user.password,
+          userRole: [],
+          userGroup: [],
+        };
+        const createdUser:any = await this.userService.createUsers(userToCreate);
+        const employeeUserId:any = {
+          userId: createdUser.id,
+        };
+        await this.employeeService.updateEmployee(user.id, employeeUserId);
+        console.log(`User ${user.username} created and employee updated.`);
+      } catch (error) {
+        console.error(`Error processing user ${user.username}:`, error);
+      }
+    }
+    console.log("All users processed.");
   }
 
   private async populateItem(filePath: string) {

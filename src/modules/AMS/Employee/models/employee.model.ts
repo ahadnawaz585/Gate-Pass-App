@@ -39,6 +39,22 @@ const employeeModel = prisma.$extends({
         return data;
       },
 
+     async gpFindEmployeeByUserId(this:any,userId:string){
+        const data = await prisma.user.findUnique({
+          where: {
+            id: userId,
+            isDeleted: null,
+          },
+        });
+
+        if (data?.employeeId) {
+          const employee = await prisma.employee.gpFindById(data?.employeeId);
+
+          return employee;
+        }
+
+        return null;
+      },
       async gpFindByUserId(this: any, userId: string) {
         const data = await prisma.user.findUnique({
           where: {
