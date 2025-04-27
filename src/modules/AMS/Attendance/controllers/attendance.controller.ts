@@ -151,6 +151,24 @@ class AttendanceController extends BaseController<AttendanceService> {
     const errorMessage = "Error restoring Attendance:";
     this.handleRequest(operation, successMessage, errorMessage, res);
   }
+  
+  async importAttendance(req: Request, res: Response) {
+    const { employeeId, month } = req.body;
+    const file = req.file?.buffer;
+
+    if (!file) {
+      return res.status(400).json({ message: "No file uploaded." });
+    }
+
+    if (!employeeId || !month) {
+      return res.status(400).json({ message: "employeeId and month are required." });
+    }
+
+    const operation = () => this.service.importAttendance(employeeId, month, file);
+    const successMessage = "Attendance imported successfully!";
+    const errorMessage = "Error importing Attendance:";
+    this.handleRequest(operation, successMessage, errorMessage, res);
+  }
 }
 
 export default AttendanceController;

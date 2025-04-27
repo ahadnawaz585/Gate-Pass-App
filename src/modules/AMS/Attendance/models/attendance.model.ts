@@ -1,10 +1,11 @@
 import prisma from "../../../../core/models/base.model";
-import { startOfDay, endOfDay } from "date-fns";
+import { startOfDay, endOfDay, parseISO } from 'date-fns';
 import { Attendance } from "../types/Attendance";
 import {
   formatTime,
   getCurrentTimeInPST,
 } from "../../../../helper/date.helper";
+
 import { AttendanceStatus, Employee } from "@prisma/client";
 import { convertToPST } from "../helper/date.helper";
 // import { FaceComparisonService } from "../../Face-api/services/face-api.service";
@@ -89,6 +90,7 @@ const attendanceModel = prisma.$extends({
           message: `${employeeName} has not checked in yet! Do you want to mark attendance for ${employeeName} as ${status}?`,
         };
       },
+ 
 
       async getSpecificAttendances(type: any, employeeId: string) {
         // console.log(type);
@@ -239,7 +241,7 @@ ORDER BY
 
         const todayStart = from ? startOfDay(from) : from;
         const todayEnd = to ? endOfDay(to) : today;
-        // console.log(todayStart, todayEnd);
+        console.log(todayStart, todayEnd);
 
         // Fetch full attendance details with employee data
         const data = await prisma.$queryRaw`

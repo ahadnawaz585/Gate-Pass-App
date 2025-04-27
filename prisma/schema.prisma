@@ -257,6 +257,7 @@ enum AttendanceStatus {
   ABSENT
   LATE
   ON_LEAVE
+  HALF_DAY
 }
 
 model LeaveRequest {

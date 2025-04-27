@@ -204,6 +204,21 @@ console.log( { username, password, rememberMe, platform } );
       if (user.id) {
         employee = await this.employeeService.getEmployeeByUserId(user.id);
       }
+    }else if(platform == "quick-solutions"){
+      isAllowded = await this.accessService.checkPermission(
+        user?.id || "",
+        "login.quickmark.*"
+      );
+      if (isAllowded) {
+
+  
+  
+        // return res.json({ url });
+      } else {
+        return res
+          .status(401)
+          .json({ message: "You don't have permission to login ! contact ERP" });
+      }
     }
 
     if (isAllowded) {

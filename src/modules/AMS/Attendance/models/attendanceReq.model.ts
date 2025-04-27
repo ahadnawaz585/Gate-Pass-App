@@ -23,6 +23,7 @@ const attendanceRequestModel = prisma.$extends({
           const Attendance = {
             employeeId,
             date:createdAt || new Date(),
+            checkIn: createdAt ||  new Date(),
             status:AttendanceStatus.PRESENT,
             location: location ?? undefined,
           }

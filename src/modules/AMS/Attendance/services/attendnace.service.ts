@@ -2,6 +2,7 @@ import attendanceModel from "../models/attendance.model";
 import { Attendance } from "../types/Attendance";
 import { paginatedData } from "../../../../types/paginatedData";
 import { AttendanceStatus } from "@prisma/client";
+import ExcelValidator from "../helper/excelValidator";
 
 class AttendanceService {
   async getAllattendances() {
@@ -105,6 +106,29 @@ return await attendanceModel.attendance.markFaceAttendance(image);
   async getTotal() {
     return await attendanceModel.attendance.gpCount();
   }
+
+  async importAttendance(employeeId: string, month: string, file: Buffer): Promise<any> {
+    const validator = new ExcelValidator();
+    const validationResult = await validator.validateExcel(file, employeeId, month);
+
+    if (!validationResult.isValid) {
+      console.log(validationResult);
+      throw new Error(validationResult.message);
+    }
+
+    const attendances: Attendance[] = validationResult.data.map((row: any) => ({
+      employeeId,
+      date: new Date(row.date),
+      status: row.status as AttendanceStatus,
+      checkIn: row.checkIn,
+      checkOut: row.checkOut,
+    }));
+
+    console.log(attendances);
+
+    return await this.createAttendance(attendances);
+  }
+  
 }
 
 export default AttendanceService;
