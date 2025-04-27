@@ -208,6 +208,7 @@ export const features: AppFeature[] = [
   { name: "employee.pdf.*", parentFeatureId: "employee.*", label: "Print" },
   { name: "employee.excel.*", parentFeatureId: "employee.*", label: "Excel" },
 
+
   //attendance
   { name: "attendance.*", label: "Attendance (Nav)" },
 { name: "attendance.markAttendance.*", parentFeatureId: "attendance.*", label: "Attendance Marking" },
@@ -217,7 +218,7 @@ export const features: AppFeature[] = [
 { name: "attendance.manualAttendance.*", parentFeatureId: "attendance.*", label: "Manual Attendance" },
 { name: "attendance.filter.*", parentFeatureId: "attendance.*", label: "Filter Attendance" },
 { name: "attendance.update.*", parentFeatureId: "attendance.*", label: "Update Attendance" },
-
+{ name: "attendance.excelImport.*", parentFeatureId: "attendance.*", label: "Excel Import" },
 // attedanceReq
 { name: "attendanceReq.*", label: "Attendance Req (Nav)" },
 { name: "attendanceReq.create.*", parentFeatureId: "attendanceReq.*", label: "Create" },
