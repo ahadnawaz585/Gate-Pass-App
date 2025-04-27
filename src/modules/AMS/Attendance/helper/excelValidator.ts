@@ -1,6 +1,5 @@
 import * as XLSX from 'xlsx';
 import { AttendanceStatus } from '@prisma/client';
-import { convertToPST } from './date.helper';
 
 interface ValidationResult {
   isValid: boolean;
@@ -14,21 +13,31 @@ class ExcelValidator {
 
   // Utility function to convert Excel date-time to HH:mm format
   private convertExcelTimeToHHMM(excelDate: Date): string {
-    // Use getHours() to respect the local time zone (Pakistan Standard Time, UTC+5)
-    const hours = excelDate.getHours().toString().padStart(2, '0');
-    const minutes = excelDate.getMinutes().toString().padStart(2, '0');
+    // Convert the Excel date to Pakistan Standard Time (UTC+5)
+    const offsetMinutes = 5 * 60; // UTC+5 in minutes
+    const localDate = new Date(excelDate.getTime() + offsetMinutes * 60 * 1000);
+    const hours = localDate.getUTCHours().toString().padStart(2, '0');
+    const minutes = localDate.getUTCMinutes().toString().padStart(2, '0');
     return `${hours}:${minutes}`;
   }
 
-  // Utility function to combine date and time into an ISO string
+  // Utility function to combine date and time into an ISO string (in UTC)
   private combineDateAndTime(date: Date, time: string | null): string | null {
     if (!time) return null;
     const [hours, minutes] = time.split(':').map(Number);
+    // Create a new Date object based on the provided date
     const combinedDate = new Date(date);
-    // Reset hours to 0 to start fresh
-    combinedDate.setHours(0, 0, 0, 0);
-    // Set the specific hours and minutes from the checkIn/checkOut time
-    combinedDate.setHours(hours, minutes, 0, 0);
+    // Reset time to 00:00:00 UTC
+    combinedDate.setUTCHours(0, 0, 0, 0);
+    // Set the hours and minutes in Pakistan Standard Time (UTC+5)
+    // Since the time (e.g., 10:00) is in Pakistan Standard Time, we need to convert it to UTC
+    // 10:00 in UTC+5 is 05:00 in UTC
+    const utcHours = (hours - 5 + 24) % 24; // Subtract 5 hours to convert from UTC+5 to UTC
+    combinedDate.setUTCHours(utcHours, minutes, 0, 0);
+    // If the UTC time rolls back to the previous day, adjust the date
+    if (utcHours > hours) {
+      combinedDate.setUTCDate(combinedDate.getUTCDate() - 1);
+    }
     return combinedDate.toISOString();
   }
 
@@ -132,9 +141,10 @@ class ExcelValidator {
           break;
         }
 
-        // Create the base date and add 9 hours
-        const date = new Date(year, monthIndex, day);
-        date.setHours(date.getHours() + 9); // Add 9 hours to the date
+        // Create the base date in UTC
+        const date = new Date(Date.UTC(year, monthIndex, day));
+        // Apply the 9-hour offset to the date (in UTC)
+        date.setUTCHours(9, 0, 0, 0);
 
         if (isNaN(date.getTime())) {
           return {
@@ -144,7 +154,7 @@ class ExcelValidator {
           };
         }
 
-        const rowMonth = date.toLocaleString('default', { month: 'long' });
+        const rowMonth = date.toLocaleString('en-US', { month: 'long', timeZone: 'UTC' });
         if (rowMonth !== month) {
           return {
             isValid: false,
@@ -219,8 +229,8 @@ class ExcelValidator {
           employeeId: employeeId,
           date: date.toISOString(),
           status: normalizedRow.status,
-          checkIn: checkInISO ? convertToPST(new Date(checkInISO)) : null,
-          checkOut: checkOutISO ? convertToPST(new Date(checkOutISO)) : null,
+          checkIn: checkInISO,
+          checkOut: checkOutISO,
         });
       }
 
