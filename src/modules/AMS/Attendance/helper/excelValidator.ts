@@ -1,5 +1,6 @@
 import * as XLSX from 'xlsx';
 import { AttendanceStatus } from '@prisma/client';
+import { convertToPST } from './date.helper';
 
 interface ValidationResult {
   isValid: boolean;
@@ -218,8 +219,8 @@ class ExcelValidator {
           employeeId: employeeId,
           date: date.toISOString(),
           status: normalizedRow.status,
-          checkIn: checkInISO,
-          checkOut: checkOutISO,
+          checkIn: checkInISO ? convertToPST(new Date(checkInISO)) : null,
+          checkOut: checkOutISO ? convertToPST(new Date(checkOutISO)) : null,
         });
       }
 
