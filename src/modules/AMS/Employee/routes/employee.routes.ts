@@ -47,6 +47,7 @@ class EmployeeRoutes {
     this.initializeRoutes();
   }
 
+
   private initializeRoutes(): void {
     this.router.get('/get', this.controller.getAllEmployees.bind(this.controller));
     this.router.post('/get', this.controller.getEmployees.bind(this.controller));

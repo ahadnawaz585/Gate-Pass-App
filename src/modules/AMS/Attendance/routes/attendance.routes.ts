@@ -31,6 +31,8 @@ class AttendanceRoutes {
     this.router.post('/search', this.controller.searchAttendances.bind(this.controller));
     this.router.post('/face-attendance', this.controller.faceAttendance.bind(this.controller));
     this.router.post('/specific', this.controller.getSpecificTypeAttendances.bind(this.controller));
+    this.router.post('/excel',this.controller.downloadExcelAttendance.bind(this.controller));
+    this.router.post('/pdf',this.controller.attendancePdf.bind(this.controller));
     // Use multer middleware for the import route to handle file uploads
     this.router.post('/import', upload.single('file'), this.controller.importAttendance.bind(this.controller));
   }
