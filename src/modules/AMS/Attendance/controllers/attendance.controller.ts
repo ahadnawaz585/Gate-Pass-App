@@ -82,16 +82,19 @@ class AttendanceController extends BaseController<AttendanceService> {
     const { from, to, employeeId } = req.body;
     let data: any = [];
 
-    if (from || to) {
-      if (employeeId) {
-        this.service.getEmployeeAttendance(employeeId, from, to);
-      } else {
-        data = await this.service.getDatedAttendance(from, to);
-      }
+    if (employeeId) {
+        data = await this.service.getEmployeeAttendance(employeeId, from, to);
     } else {
-      data = await this.service.getAllattendances();
+      // If no employeeId is provided
+      if (from || to) {
+        // If only dates are provided, get attendance for all employees within date range
+        data = await this.service.getDatedAttendance(from, to);
+      } else {
+        // If neither employeeId nor dates are provided, get all attendance records
+        data = await this.service.getAllattendances();
+      }
     }
-
+ 
     const result = await this.excelUtility.create(data);
 
     res.setHeader(
@@ -107,22 +110,26 @@ class AttendanceController extends BaseController<AttendanceService> {
 
   async attendancePdf(req: Request, res: Response) {
     const { from, to, employeeId } = req.body;
+    console.log({ from, to, employeeId });
     try {
       let data: any = [];
   
-      if (from || to) {
-        if (employeeId) {
-          this.service.getEmployeeAttendance(employeeId, from, to);
-        } else {
-          data = await this.service.getDatedAttendance(from, to);
-        }
+      if (employeeId) {
+          data = await this.service.getEmployeeAttendance(employeeId, from, to);
       } else {
-        data = await this.service.getAllattendances();
+        // If no employeeId is provided
+        if (from || to) {
+          // If only dates are provided, get attendance for all employees within date range
+          data = await this.service.getDatedAttendance(from, to);
+        } else {
+          // If neither employeeId nor dates are provided, get all attendance records
+          data = await this.service.getAllattendances();
+        }
       }
+  
 
-      if (data) {
         const pdfDoc = this.pdfUtility.generateAttendancePDF(data);
-
+  
         // Format current date as YYYY-MM-DD
         const currentDate = new Date()
           .toLocaleDateString("en-CA", {
@@ -132,7 +139,7 @@ class AttendanceController extends BaseController<AttendanceService> {
           })
           .split("-")
           .join("-");
-
+  
         pdfDoc.getBuffer((buffer: Buffer) => {
           if (buffer) {
             res.writeHead(200, {
@@ -145,7 +152,7 @@ class AttendanceController extends BaseController<AttendanceService> {
             res.status(500).json({ error: "Error generating PDF buffer" });
           }
         });
-      }
+      
     } catch (error) {
       console.error("Error generating PDF:", error);
       res.status(500).json({ error: "Internal Server Error" });
