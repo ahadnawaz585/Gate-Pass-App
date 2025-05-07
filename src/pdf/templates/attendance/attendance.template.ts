@@ -1,4 +1,4 @@
-import { TDocumentDefinitions, Content } from "pdfmake/interfaces";
+import { TDocumentDefinitions, Content, ContentStack, ContentColumns, ContentTable, Margins } from "pdfmake/interfaces";
 
 export const generateAttendanceTemplate = (
   data: any[],
@@ -12,85 +12,11 @@ export const generateAttendanceTemplate = (
   const totalRecords = data.length;
   const averageHoursPerDay = calculateAverageHours(data);
   
-  // Group by date to show attendance trends
-  const dateGroups = groupByDate(data);
-  const dateLabels = Object.keys(dateGroups);
-  const attendanceCounts = dateLabels.map(date => dateGroups[date].length);
-
-  // Create table body with improved styling
-  const tableBody: any[] = [
-    [
-      { text: '#', style: 'tableHeader', alignment: 'center', width: 25 },
-      { text: 'EMPLOYEE', style: 'tableHeader' },
-      { text: 'DATE', style: 'tableHeader', alignment: 'center' },
-      { text: 'IN', style: 'tableHeader', alignment: 'center' },
-      { text: 'OUT', style: 'tableHeader', alignment: 'center' },
-      { text: 'HRS', style: 'tableHeader', alignment: 'center' },
-      { text: 'CODE', style: 'tableHeader', alignment: 'center' },
-    ],
-  ];
-
-  data.forEach((record, index) => {
-    const checkInTime = record.checkIn ? new Date(record.checkIn) : null;
-    const checkOutTime = record.checkOut ? new Date(record.checkOut) : null;
-    
-    let hoursWorked = '-';
-    if (checkInTime && checkOutTime) {
-      const diff = (checkOutTime.getTime() - checkInTime.getTime()) / (1000 * 60 * 60);
-      hoursWorked = diff.toFixed(1);
-    }
-    
-    tableBody.push([
-      {
-        text: (index + 1).toString(),
-        style: 'tableCell',
-        alignment: 'center'
-      },
-      {
-        text: `${record.employeeName} ${record.employeeSurname}`,
-        style: 'tableCell'
-      },
-      {
-        text: record.date ? new Date(record.date).toLocaleDateString('en-US', {
-          month: 'short',
-          day: '2-digit'
-        }) : '-',
-        style: 'tableCell',
-        alignment: 'center'
-      },
-      {
-        text: checkInTime ? checkInTime.toLocaleTimeString('en-US', {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: true
-        }) : '-',
-        style: 'tableCell',
-        alignment: 'center'
-      },
-      {
-        text: checkOutTime ? checkOutTime.toLocaleTimeString('en-US', {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: true
-        }) : '-',
-        style: 'tableCell',
-        alignment: 'center'
-      },
-      {
-        text: hoursWorked,
-        style: 'tableCell',
-        alignment: 'center'
-      },
-      {
-        text: record.code || '-',
-        style: 'tableCell',
-        alignment: 'center'
-      },
-    ]);
-  });
-
+  // Group by employee code
+  const employeeGroups = groupByEmployeeCode(data);
+  
   // Create document content
-  const content: Content = [
+  const content: Content[] = [
     // Compact header with logo and company info
     {
       columns: [
@@ -107,7 +33,7 @@ export const generateAttendanceTemplate = (
           alignment: 'right',
         }
       ],
-      margin: [0, 0, 0, 10]
+      margin: [0, 0, 0, 10] as Margins
     },
     
     // Report title and metadata in more compact form
@@ -119,13 +45,15 @@ export const generateAttendanceTemplate = (
             {
               width: 'auto',
               text: [
-
+                { text: 'Department: ', style: 'metadataLabel' },
+                { text: department, style: 'metadataValue' }
               ]
             },
             {
               width: 'auto',
               text: [
-
+                { text: 'Period: ', style: 'metadataLabel' },
+                { text: period, style: 'metadataValue' }
               ]
             },
             {
@@ -147,14 +75,157 @@ export const generateAttendanceTemplate = (
           columnGap: 5,
         }
       ],
-      margin: [0, 0, 0, 10]
+      margin: [0, 0, 0, 10] as Margins
     },
+  ];
+  
+  // Generate a section for each employee
+  Object.keys(employeeGroups).forEach(employeeCode => {
+    const employeeRecords = employeeGroups[employeeCode];
+    if (employeeRecords.length === 0) return;
     
-    // Main attendance table - more compact
-    {
+    // Get the first record to display employee details
+    const firstRecord = employeeRecords[0];
+    
+    // Create employee card
+    const employeeCard: ContentStack = {
+      stack: [
+        {
+          table: {
+            widths: ['*'],
+            body: [
+              [
+                {
+                  stack: [
+                    {
+                      columns: [
+                        {
+                          stack: [
+                            { text: `${firstRecord.employeeName} ${firstRecord.employeeSurname}`, style: 'employeeName' },
+                            { text: firstRecord.designation || '-', style: 'employeeDesignation' }
+                          ],
+                          width: '*'
+                        },
+                        {
+                          stack: [
+                            { text: 'Department', style: 'cardLabel' },
+                            { text: firstRecord.department || '-', style: 'cardValue' }
+                          ],
+                          width: 'auto'
+                        },
+                        {
+                          stack: [
+                            { text: 'Employee Code', style: 'cardLabel' },
+                            { text: employeeCode, style: 'cardValue' }
+                          ],
+                          width: 'auto'
+                        },
+                        {
+                          stack: [
+                            { text: 'Contact', style: 'cardLabel' },
+                            { text: firstRecord.contactNo || '-', style: 'cardValue' }
+                          ],
+                          width: 'auto'
+                        }
+                      ],
+                      columnGap: 20
+                    }
+                  ]
+                }
+              ]
+            ],
+          },
+          layout: {
+            fillColor: () => '#F9FAFB',
+            hLineWidth: () => 1,
+            vLineWidth: () => 1,
+            hLineColor: () => '#E5E7EB',
+            vLineColor: () => '#E5E7EB',
+            paddingLeft: () => 12,
+            paddingRight: () => 12,
+            paddingTop: () => 12,
+            paddingBottom: () => 12,
+          },
+          margin: [0, 0, 0, 5] as Margins
+        }
+      ],
+      margin: [0, 0, 0, 5] as Margins
+    };
+    
+    content.push(employeeCard);
+    
+    // Create attendance records table for this employee
+    const tableBody: any[] = [
+      [
+        { text: '#', style: 'tableHeader', alignment: 'center', width: 25 },
+        { text: 'DATE', style: 'tableHeader', alignment: 'center' },
+        { text: 'IN', style: 'tableHeader', alignment: 'center' },
+        { text: 'OUT', style: 'tableHeader', alignment: 'center' },
+        { text: 'HRS', style: 'tableHeader', alignment: 'center' },
+        { text: 'STATUS', style: 'tableHeader', alignment: 'center' },
+      ],
+    ];
+    
+    employeeRecords.forEach((record, index) => {
+      const checkInTime = record.checkIn ? new Date(record.checkIn) : null;
+      const checkOutTime = record.checkOut ? new Date(record.checkOut) : null;
+      
+      let hoursWorked = '-';
+      if (checkInTime && checkOutTime) {
+        const diff = (checkOutTime.getTime() - checkInTime.getTime()) / (1000 * 60 * 60);
+        hoursWorked = diff.toFixed(1);
+      }
+      
+      tableBody.push([
+        {
+          text: (index + 1).toString(),
+          style: 'tableCell',
+          alignment: 'center'
+        },
+        {
+          text: record.date ? new Date(record.date).toLocaleDateString('en-US', {
+            month: 'short',
+            day: '2-digit',
+            year: 'numeric'
+          }) : '-',
+          style: 'tableCell',
+          alignment: 'center'
+        },
+        {
+          text: checkInTime ? checkInTime.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+          }) : '-',
+          style: 'tableCell',
+          alignment: 'center'
+        },
+        {
+          text: checkOutTime ? checkOutTime.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true
+          }) : '-',
+          style: 'tableCell',
+          alignment: 'center'
+        },
+        {
+          text: hoursWorked,
+          style: 'tableCell',
+          alignment: 'center'
+        },
+        {
+          text: record.status || '-',
+          style: 'tableCell',
+          alignment: 'center'
+        },
+      ]);
+    });
+    
+    const attendanceTable: ContentTable = {
       table: {
         headerRows: 1,
-        widths: [25, '*', 'auto', 'auto', 'auto', 'auto', 'auto'],
+        widths: [25, '*', 'auto', 'auto', 'auto', 'auto'],
         body: tableBody,
       },
       layout: {
@@ -173,10 +244,43 @@ export const generateAttendanceTemplate = (
         paddingTop: () => 5,
         paddingBottom: () => 5,
       },
-      margin: [0, 0, 0, 15]
-    },
+      margin: [0, 0, 0, 20] as Margins
+    };
     
-    // Stats cards displayed at the bottom
+    content.push(attendanceTable);
+    
+    // Calculate employee-specific statistics
+    const totalAttendanceDays = employeeRecords.length;
+    const presentDays = employeeRecords.filter(r => r.status === 'PRESENT').length;
+    const avgHours = calculateAverageHoursForEmployee(employeeRecords);
+    
+    const employeeStats: ContentColumns = {
+      columns: [
+        {
+          text: `Total Days: ${totalAttendanceDays}`,
+          style: 'employeeStats',
+          width: '*'
+        },
+        {
+          text: `Present: ${presentDays}`,
+          style: 'employeeStats',
+          width: '*'
+        },
+        {
+          text: `Avg Hours: ${avgHours}h`,
+          style: 'employeeStats',
+          width: '*'
+        }
+      ],
+      columnGap: 5,
+      margin: [0, 0, 0, 25] as Margins
+    };
+    
+    content.push(employeeStats);
+  });
+  
+  // Summary statistics at the bottom of the report
+  content.push(
     {
       columns: [
         {
@@ -274,7 +378,7 @@ export const generateAttendanceTemplate = (
         }
       ],
       columnGap: 10,
-      margin: [0, 0, 0, 15]
+      margin: [0, 0, 0, 15] as Margins
     },
     
     // Footer with summary and signature
@@ -295,10 +399,10 @@ export const generateAttendanceTemplate = (
         }
       ],
       columnGap: 10,
-      margin: [0, 20, 0, 0]
-    },
-  ];
-
+      margin: [0, 20, 0, 0] as Margins
+    }
+  );
+  
   return {
     pageSize: 'A4',
     pageMargins: [30, 30, 30, 45],
@@ -309,7 +413,7 @@ export const generateAttendanceTemplate = (
           { text: 'Confidential Document', alignment: 'left', style: 'pageFooter' },
           { text: `Page ${currentPage} of ${pageCount}`, alignment: 'right', style: 'pageFooter' }
         ],
-        margin: [30, 0]
+        margin: [30, 0] as Margins
       };
     },
     styles: {
@@ -328,7 +432,7 @@ export const generateAttendanceTemplate = (
         bold: true,
         color: '#2C3E50',
         alignment: 'center',
-        margin: [0, 0, 0, 5],
+        margin: [0, 0, 0, 5] as Margins,
       },
       metadataLabel: {
         fontSize: 9,
@@ -338,6 +442,30 @@ export const generateAttendanceTemplate = (
       metadataValue: {
         fontSize: 9,
         color: '#2C3E50',
+      },
+      employeeName: {
+        fontSize: 12,
+        bold: true,
+        color: '#2C3E50',
+      },
+      employeeDesignation: {
+        fontSize: 9,
+        color: '#7F8C8D',
+        italics: true,
+      },
+      cardLabel: {
+        fontSize: 8,
+        color: '#7F8C8D',
+      },
+      cardValue: {
+        fontSize: 9,
+        bold: true,
+        color: '#2C3E50',
+      },
+      employeeStats: {
+        fontSize: 8,
+        color: '#7F8C8D',
+        alignment: 'center',
       },
       statNumber: {
         fontSize: 18,
@@ -366,7 +494,7 @@ export const generateAttendanceTemplate = (
       signatureLabel: {
         fontSize: 9,
         color: '#7F8C8D',
-        margin: [0, 3, 0, 0],
+        margin: [0, 3, 0, 0] as Margins,
       },
       pageFooter: {
         fontSize: 7,
@@ -402,6 +530,26 @@ function calculateAverageHours(data: any[]): string {
   return validRecords > 0 ? (totalHours / validRecords).toFixed(1) : "0.0";
 }
 
+function calculateAverageHoursForEmployee(records: any[]): string {
+  let totalHours = 0;
+  let validRecords = 0;
+  
+  records.forEach(record => {
+    if (record.checkIn && record.checkOut) {
+      const checkInTime = new Date(record.checkIn);
+      const checkOutTime = new Date(record.checkOut);
+      const hours = (checkOutTime.getTime() - checkInTime.getTime()) / (1000 * 60 * 60);
+      
+      if (hours > 0 && hours < 24) {
+        totalHours += hours;
+        validRecords++;
+      }
+    }
+  });
+  
+  return validRecords > 0 ? (totalHours / validRecords).toFixed(1) : "0.0";
+}
+
 function groupByDate(data: any[]): Record<string, any[]> {
   const groups: Record<string, any[]> = {};
   
@@ -419,6 +567,22 @@ function groupByDate(data: any[]): Record<string, any[]> {
       
       groups[dateKey].push(record);
     }
+  });
+  
+  return groups;
+}
+
+function groupByEmployeeCode(data: any[]): Record<string, any[]> {
+  const groups: Record<string, any[]> = {};
+  
+  data.forEach(record => {
+    const code = record.code || 'Unknown';
+    
+    if (!groups[code]) {
+      groups[code] = [];
+    }
+    
+    groups[code].push(record);
   });
   
   return groups;

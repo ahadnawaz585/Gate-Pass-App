@@ -2,74 +2,406 @@ import * as ExcelJS from 'exceljs';
 import * as fs from 'fs';
 import * as path from 'path';
 
+// Define interface for attendance data to improve type safety
+interface AttendanceRecord {
+  code?: string;
+  employeeName: string;
+  employeeSurname: string;
+  department?: string;
+  date: string | Date;
+  checkIn?: string | Date;
+  checkOut?: string | Date;
+  status: string;
+  comment?: string;
+}
+
 export class AttendanceExcelUtility {
-  async create(attendanceData: any[]): Promise<{ wbout: Buffer; fileName: string }> {
+  async create(attendanceData: AttendanceRecord[]): Promise<{ wbout: Buffer; fileName: string }> {
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Attendance');
 
-    // Define column headers
-    worksheet.columns = [
-      { header: 'Employee Name', key: 'fullName', width: 25 },
-      { header: 'Date', key: 'date', width: 15 },
-      { header: 'Check In', key: 'checkIn', width: 15 },
-      { header: 'Check Out', key: 'checkOut', width: 15 },
-      { header: 'Employee Code', key: 'code', width: 20 },
-    ];
+    // Create Summary sheet
+    const summarySheet = workbook.addWorksheet('Summary');
+    this.createSummarySheet(summarySheet, attendanceData);
 
-    // Add data rows
-    attendanceData.forEach((record) => {
-      worksheet.addRow({
-        fullName: `${record.employeeName} ${record.employeeSurname}`,
-        date: record.date ? new Date(record.date).toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: 'short',
-          day: '2-digit'
-        }) : '',
-        checkIn: record.checkIn ? new Date(record.checkIn).toLocaleTimeString('en-US', {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: true
-        }) : '',
-        checkOut: record.checkOut ? new Date(record.checkOut).toLocaleTimeString('en-US', {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: true
-        }) : '',
-        code: record.code || '',
-      });
-    });
+    // Create Detailed Records sheet
+    const detailsSheet = workbook.addWorksheet('Detailed Records');
+    this.createDetailedSheet(detailsSheet, attendanceData);
 
-    // Style header row
-    worksheet.getRow(1).font = { bold: true };
-    worksheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
-    worksheet.getRow(1).fill = {
-      type: 'pattern',
-      pattern: 'solid',
-      fgColor: { argb: 'FFD3D3D3' }
-    };
-
-    // Auto-filter for headers
-    worksheet.autoFilter = {
-      from: 'A1',
-      to: { row: 1, column: worksheet.columns.length }
-    };
+    // Create Department Summary sheet
+    const deptSummarySheet = workbook.addWorksheet('Department Summary');
+    this.createDepartmentSummarySheet(deptSummarySheet, attendanceData);
 
     // Write workbook to buffer
     const wbout = await workbook.xlsx.writeBuffer() as Buffer;
 
-    // Format current date and time as DD-MMM-YYYY-HHMM
-    const currentDateTime = new Date().toLocaleString('en-US', {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false
-    }).replace(/, /g, '-').replace(/ /g, '-').replace(/:/g, '');
+    // Format current date and time for filename
+    const currentDateTime = new Date()
+      .toLocaleString('en-US', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      })
+      .replace(/, /g, '-')
+      .replace(/ /g, '-')
+      .replace(/:/g, '');
 
     return {
       wbout,
-      fileName: `Attendance-${currentDateTime}.xlsx`,
+      fileName: `Attendance-Report-${currentDateTime}.xlsx`,
     };
+  }
+
+  private createSummarySheet(worksheet: ExcelJS.Worksheet, attendanceData: AttendanceRecord[]): void {
+    // Group data by employee code
+    const employeeGroups = this.groupByEmployeeCode(attendanceData);
+
+    // Define column headers for summary
+    worksheet.columns = [
+      { header: 'Employee Code', key: 'code', width: 20 },
+      { header: 'Employee Name', key: 'fullName', width: 25 },
+      { header: 'Department', key: 'department', width: 20 },
+      { header: 'Total Days', key: 'totalDays', width: 12 },
+      { header: 'Average Hours/Day', key: 'avgHours', width: 18 },
+      { header: 'Present Days', key: 'presentDays', width: 15 },
+      { header: 'Late Check-ins', key: 'lateDays', width: 15 },
+      { header: 'First Check-in', key: 'firstDate', width: 15 },
+      { header: 'Last Check-in', key: 'lastDate', width: 15 },
+    ];
+
+    // Add summary rows for each employee
+    Object.keys(employeeGroups).forEach((code) => {
+      const records = employeeGroups[code];
+      if (records.length === 0) return;
+
+      const firstRecord = records[0];
+      const totalDays = records.length;
+      const presentDays = records.filter((r) => r.status === 'PRESENT').length;
+      const lateDays = records.filter((r) => r.status === 'LATE').length;
+      const avgHours = this.calculateAverageHoursForEmployee(records);
+
+      // Sort records by date for finding first and last
+      const sortedByDate = [...records].sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
+
+      const firstDate = sortedByDate.length > 0 ? new Date(sortedByDate[0].date) : null;
+      const lastDate =
+        sortedByDate.length > 0 ? new Date(sortedByDate[sortedByDate.length - 1].date) : null;
+
+      worksheet.addRow({
+        code: code,
+        fullName: `${firstRecord.employeeName} ${firstRecord.employeeSurname}`,
+        department: firstRecord.department || '-',
+        totalDays: totalDays,
+        avgHours: `${avgHours}h`,
+        presentDays: presentDays,
+        lateDays: lateDays,
+        firstDate: firstDate
+          ? firstDate.toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: '2-digit',
+            })
+          : '-',
+        lastDate: lastDate
+          ? lastDate.toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: '2-digit',
+            })
+          : '-',
+      });
+    });
+
+    // Apply styles to header row
+    this.styleHeaderRow(worksheet);
+
+    // Add conditional formatting
+    this.addConditionalFormatting(worksheet);
+
+    // Add total row at the bottom
+    const totalRow = worksheet.addRow({
+      code: 'TOTAL',
+      fullName: `${Object.keys(employeeGroups).length} Employees`,
+      totalDays: attendanceData.length,
+      avgHours: `${this.calculateAverageHours(attendanceData)}h`,
+      presentDays: attendanceData.filter((r) => r.status === 'PRESENT').length,
+      lateDays: attendanceData.filter((r) => r.status === 'LATE').length,
+    });
+
+    // Style total row
+    totalRow.font = { bold: true };
+    totalRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFE0E0E0' },
+    };
+  }
+
+  private createDetailedSheet(worksheet: ExcelJS.Worksheet, attendanceData: AttendanceRecord[]): void {
+    // Define column headers for detailed view
+    worksheet.columns = [
+      { header: 'Employee Code', key: 'code', width: 20 },
+      { header: 'Employee Name', key: 'fullName', width: 25 },
+      { header: 'Department', key: 'department', width: 20 },
+      { header: 'Date', key: 'date', width: 15 },
+      { header: 'Check In', key: 'checkIn', width: 15 },
+      { header: 'Check Out', key: 'checkOut', width: 15 },
+      { header: 'Hours', key: 'hours', width: 10 },
+      { header: 'Status', key: 'status', width: 12 },
+      { header: 'Comment', key: 'comment', width: 30 }, // Added comment column
+    ];
+
+    // Add data rows
+    attendanceData.forEach((record) => {
+      const checkInTime = record.checkIn ? new Date(record.checkIn) : null;
+      const checkOutTime = record.checkOut ? new Date(record.checkOut) : null;
+
+      let hoursWorked = '-';
+      if (checkInTime && checkOutTime) {
+        const diff = (checkOutTime.getTime() - checkInTime.getTime()) / (1000 * 60 * 60);
+        hoursWorked = diff.toFixed(1);
+      }
+
+      worksheet.addRow({
+        code: record.code || '',
+        fullName: `${record.employeeName} ${record.employeeSurname}`,
+        department: record.department || '',
+        date: record.date
+          ? new Date(record.date).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: '2-digit',
+            })
+          : '',
+        checkIn: checkInTime
+          ? checkInTime.toLocaleTimeString('en-US', {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: true,
+            })
+          : '',
+        checkOut: checkOutTime
+          ? checkOutTime.toLocaleTimeString('en-US', {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: true,
+            })
+          : '',
+        hours: hoursWorked,
+        status: record.status || '',
+        comment: record.comment || '-', // Display '-' if comment is empty
+      });
+    });
+
+    // Style header row
+    this.styleHeaderRow(worksheet);
+
+    // Apply conditional formatting for status column
+    worksheet.getColumn('status').eachCell((cell, rowNumber) => {
+      if (rowNumber > 1) {
+        if (cell.value === 'PRESENT') {
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFD4EDDA' },
+          };
+        } else if (cell.value === 'LATE') {
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFFFF3CD' },
+          };
+        } else if (cell.value === 'ABSENT') {
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFF8D7DA' },
+          };
+        }
+      }
+    });
+
+    // Auto-filter for headers
+    worksheet.autoFilter = {
+      from: 'A1',
+      to: { row: 1, column: worksheet.columns.length },
+    };
+  }
+
+  private createDepartmentSummarySheet(worksheet: ExcelJS.Worksheet, attendanceData: AttendanceRecord[]): void {
+    // Group by department
+    const departmentGroups = this.groupByDepartment(attendanceData);
+
+    // Define column headers
+    worksheet.columns = [
+      { header: 'Department', key: 'department', width: 25 },
+      { header: 'Employee Count', key: 'employeeCount', width: 18 },
+      { header: 'Records Count', key: 'recordCount', width: 18 },
+      { header: 'Average Hours/Day', key: 'avgHours', width: 20 },
+      { header: 'Present %', key: 'presentPercent', width: 15 },
+      { header: 'Late %', key: 'latePercent', width: 15 },
+    ];
+
+    // Add department summary rows
+    Object.keys(departmentGroups).forEach((dept) => {
+      const records = departmentGroups[dept];
+      if (records.length === 0) return;
+
+      const employeeCodes = new Set(records.map((r) => r.code));
+      const totalRecords = records.length;
+      const presentRecords = records.filter((r) => r.status === 'PRESENT').length;
+      const lateRecords = records.filter((r) => r.status === 'LATE').length;
+      const avgHours = this.calculateAverageHours(records);
+
+      worksheet.addRow({
+        department: dept || 'Unassigned',
+        employeeCount: employeeCodes.size,
+        recordCount: totalRecords,
+        avgHours: `${avgHours}h`,
+        presentPercent: totalRecords > 0 ? `${((presentRecords / totalRecords) * 100).toFixed(1)}%` : '0%',
+        latePercent: totalRecords > 0 ? `${((lateRecords / totalRecords) * 100).toFixed(1)}%` : '0%',
+      });
+    });
+
+    // Style header row
+    this.styleHeaderRow(worksheet);
+
+    // Add total row
+    const totalEmployeeCodes = new Set(attendanceData.map((r) => r.code));
+    const totalPresentRecords = attendanceData.filter((r) => r.status === 'PRESENT').length;
+    const totalLateRecords = attendanceData.filter((r) => r.status === 'LATE').length;
+
+    const totalRow = worksheet.addRow({
+      department: 'ALL DEPARTMENTS',
+      employeeCount: totalEmployeeCodes.size,
+      recordCount: attendanceData.length,
+      avgHours: `${this.calculateAverageHours(attendanceData)}h`,
+      presentPercent: attendanceData.length > 0
+        ? `${((totalPresentRecords / attendanceData.length) * 100).toFixed(1)}%`
+        : '0%',
+      latePercent: attendanceData.length > 0
+        ? `${((totalLateRecords / attendanceData.length) * 100).toFixed(1)}%`
+        : '0%',
+    });
+
+    // Style total row
+    totalRow.font = { bold: true };
+    totalRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFE0E0E0' },
+    };
+  }
+
+  private styleHeaderRow(worksheet: ExcelJS.Worksheet): void {
+    const headerRow = worksheet.getRow(1);
+    headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
+    headerRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF2C3E50' }, // Dark blue header
+    };
+    headerRow.height = 24;
+
+    // Apply borders to all cells
+    worksheet.eachRow({ includeEmpty: false }, (row) => {
+      row.eachCell({ includeEmpty: false }, (cell) => {
+        cell.border = {
+          top: { style: 'thin', color: { argb: 'FFD6D6D6' } },
+          left: { style: 'thin', color: { argb: 'FFD6D6D6' } },
+          bottom: { style: 'thin', color: { argb: 'FFD6D6D6' } },
+          right: { style: 'thin', color: { argb: 'FFD6D6D6' } },
+        };
+
+        // Center-align numeric cells
+        if (typeof cell.value === 'number') {
+          cell.alignment = { horizontal: 'center' };
+        }
+      });
+    });
+  }
+
+  private addConditionalFormatting(worksheet: ExcelJS.Worksheet): void {
+    // Add conditional formatting for average hours
+    worksheet.getColumn('avgHours').eachCell((cell, rowNumber) => {
+      if (rowNumber > 1) {
+        const hours = parseFloat(String(cell.value).replace('h', ''));
+        if (hours < 6) {
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFFFD0D0' }, // Light red for low hours
+          };
+        } else if (hours > 9) {
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFD0FFD0' }, // Light green for high hours
+          };
+        }
+      }
+    });
+  }
+
+  private calculateAverageHours(data: AttendanceRecord[]): string {
+    let totalHours = 0;
+    let validRecords = 0;
+
+    data.forEach((record) => {
+      if (record.checkIn && record.checkOut) {
+        const checkInTime = new Date(record.checkIn);
+        const checkOutTime = new Date(record.checkOut);
+        const hours = (checkOutTime.getTime() - checkInTime.getTime()) / (1000 * 60 * 60);
+
+        if (hours > 0 && hours < 24) {
+          // Filter out potentially erroneous records
+          totalHours += hours;
+          validRecords++;
+        }
+      }
+    });
+
+    return validRecords > 0 ? (totalHours / validRecords).toFixed(1) : '0.0';
+  }
+
+  private calculateAverageHoursForEmployee(records: AttendanceRecord[]): string {
+    return this.calculateAverageHours(records);
+  }
+
+  private groupByEmployeeCode(data: AttendanceRecord[]): Record<string, AttendanceRecord[]> {
+    const groups: Record<string, AttendanceRecord[]> = {};
+
+    data.forEach((record) => {
+      const code = record.code || 'Unknown';
+
+      if (!groups[code]) {
+        groups[code] = [];
+      }
+
+      groups[code].push(record);
+    });
+
+    return groups;
+  }
+
+  private groupByDepartment(data: AttendanceRecord[]): Record<string, AttendanceRecord[]> {
+    const groups: Record<string, AttendanceRecord[]> = {};
+
+    data.forEach((record) => {
+      const department = record.department || 'Unassigned';
+
+      if (!groups[department]) {
+        groups[department] = [];
+      }
+
+      groups[department].push(record);
+    });
+
+    return groups;
   }
 }

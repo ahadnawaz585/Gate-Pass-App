@@ -9,6 +9,25 @@ import {
 import { AttendanceStatus, Employee } from "@prisma/client";
 import { convertToPST } from "../helper/date.helper";
 // import { FaceComparisonService } from "../../Face-api/services/face-api.service";
+function formatDate(date: Date): string {
+  return new Intl.DateTimeFormat('en-US', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  })
+    .format(date)
+    .replace(/ /g, '/'); // Converts "07 May 2025" to "07/May/2025"
+}
+
+// Helper function to format time as HH:MM (24-hour)
+function formatCommentTime(date: Date | null): string {
+  if (!date) return 'no check-in time';
+  return new Intl.DateTimeFormat('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  }).format(date); // e.g., "14:30"
+}
 
 const attendanceModel = prisma.$extends({
   model: {
@@ -107,19 +126,64 @@ const attendanceModel = prisma.$extends({
 
         return data;
       },
-
+  
+      
+      // Helper function to generate comment based on status
+       generateComment(
+        employee: Employee,
+        status: string,
+        date: Date,
+        checkIn: any,
+        checkOut: any
+      ): string {
+        const employeeName = `${employee.name} ${employee.surname}`;
+        const formattedDate = formatDate(date);
+      
+        switch (status) {
+          case 'PRESENT':
+            return `${employeeName} was present on ${formattedDate} and checked in at ${formatCommentTime(
+              checkIn
+            )} and checked out at ${formatCommentTime(checkOut)}`;
+          case 'ABSENT':
+            return `${employeeName} was absent on ${formattedDate}`;
+          case 'LATE':
+            return `${employeeName} was late on ${formattedDate} and checked in at ${formatCommentTime(checkIn)}`;
+          case 'ON_LEAVE':
+            return `${employeeName} was on leave on ${formattedDate}`;
+          case 'HALF_DAY':
+            return `${employeeName} worked half day on ${formattedDate} and checked in at ${formatCommentTime(
+              checkIn
+            )} and checked out at ${formatCommentTime(checkOut)}`;
+          case 'HOLIDAYS':
+            return `${employeeName} was on holiday on ${formattedDate}`;
+          default:
+            return 'No comment available';
+        }
+      },
+      
+      // Method to mark attendance
       async markAttendance(attendanceData: Attendance) {
         // Convert current time to Pakistan Standard Time
-        const nowInPST = new Date().toLocaleString("en-US", {
-          timeZone: "Asia/Karachi",
+        const nowInPST = new Date().toLocaleString('en-US', {
+          timeZone: 'Asia/Karachi',
         });
         const targetDate = attendanceData.date
           ? new Date(attendanceData.date)
           : new Date();
         const todayStart = startOfDay(targetDate);
         const todayEnd = endOfDay(targetDate);
-
-        const employee = await prisma.employee.gpFindById(attendanceData.employeeId);
+      
+        const employee = await prisma.employee.findUnique({
+          where: { id: attendanceData.employeeId },
+        });
+      
+        if (!employee) {
+          return {
+            success: false,
+            message: `Employee with ID ${attendanceData.employeeId} not found`,
+          };
+        }
+      
         const existingAttendance = await prisma.attendance.findFirst({
           where: {
             employeeId: attendanceData.employeeId,
@@ -129,35 +193,55 @@ const attendanceModel = prisma.$extends({
             },
           },
         });
-
+      
         if (existingAttendance) {
           // If attendance already exists, mark it as a checkout
-          if (existingAttendance.checkIn) {
-            // if (!existingAttendance.checkOut) {
-              const updatedAttendance = await prisma.attendance.update({
-                where: { id: existingAttendance.id },
-                data: { checkOut: new Date() }, // Checkout time is the current time
-              });
-              return {
-                success: true,
-                message: `Check-out marked successfully for ${employee.name} ${employee.surname}!`,
-                data: updatedAttendance,
-              };
-            // }
+          if (existingAttendance.checkIn && !existingAttendance.checkOut) {
+            const updatedAttendance = await prisma.attendance.update({
+              where: { id: existingAttendance.id },
+              data: {
+                checkOut: new Date(), // Checkout time is the current time
+                comment:
+                  attendanceData.comment ||
+                  this.generateComment(
+                    employee,
+                    existingAttendance.status,
+                    targetDate,
+                    existingAttendance.checkIn,
+                    new Date() // Use current time for checkOut
+                  ),
+              },
+            });
+            return {
+              success: true,
+              message: `Check-out marked successfully for ${employee.name} ${employee.surname}!`,
+              data: updatedAttendance,
+            };
           }
-
+      
           // If checkOut already exists
           return {
             success: true,
-            message: `Attendance already marked, including check-out for ${employee.name} ${employee.surname} `,
+            message: `Attendance already marked, including check-out for ${employee.name} ${employee.surname}`,
           };
         }
-
+      
         // If no existing attendance, proceed to create
         const newAttendance = await prisma.attendance.create({
-          data: attendanceData,
+          data: {
+            ...attendanceData,
+            comment:
+              attendanceData.comment ||
+              this.generateComment(
+                employee,
+                attendanceData.status,
+                targetDate,
+                attendanceData.checkIn,
+                attendanceData.checkOut
+              ),
+          },
         });
-
+      
         return {
           success: true,
           message: `Attendance marked successfully for ${employee.name} ${employee.surname}!`,
@@ -206,11 +290,13 @@ SELECT
     a."date",
     a.status,
     a."checkIn",
+    a."comment",
     a."checkOut",
     a.location,
     a."createdAt",
     a."updatedAt",
     a."isDeleted",
+    e.code,
     e."name" AS "employeeName",
     e."surname" AS "employeeSurname",
     e."designation",

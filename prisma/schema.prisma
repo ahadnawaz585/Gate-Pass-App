@@ -244,6 +244,7 @@ model Attendance {
   employeeId String
   date       DateTime
   status     AttendanceStatus
+  comment    String?
   checkIn    DateTime?
   checkOut   DateTime?
   location   String?
@@ -258,6 +259,7 @@ enum AttendanceStatus {
   LATE
   ON_LEAVE
   HALF_DAY
+  HOLIDAYS
 }
 
 model LeaveRequest {

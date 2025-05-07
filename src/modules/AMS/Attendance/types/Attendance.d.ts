@@ -5,6 +5,7 @@ export interface Attendance {
     date: Date;
     status: AttendanceStatus;
     checkIn?: Date;
+    comment?:string;
     checkOut?: Date;
     location?: string;
     createdAt?: Date;
