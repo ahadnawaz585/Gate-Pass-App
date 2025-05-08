@@ -203,13 +203,7 @@ const attendanceModel = prisma.$extends({
                 checkOut: new Date(), // Checkout time is the current time
                 comment:
                   attendanceData.comment ||
-                  this.generateComment(
-                    employee,
-                    existingAttendance.status,
-                    targetDate,
-                    existingAttendance.checkIn,
-                    new Date() // Use current time for checkOut
-                  ),
+                  ''
               },
             });
             return {
@@ -232,13 +226,7 @@ const attendanceModel = prisma.$extends({
             ...attendanceData,
             comment:
               attendanceData.comment ||
-              this.generateComment(
-                employee,
-                attendanceData.status,
-                targetDate,
-                attendanceData.checkIn,
-                attendanceData.checkOut
-              ),
+             ''
           },
         });
       
