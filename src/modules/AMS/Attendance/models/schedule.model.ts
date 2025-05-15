@@ -17,50 +17,58 @@ const attendanceScheduleModel = prisma.$extends({
               gte: todayStart,
               lte: todayEnd,
             },
-            parent:"ABSENT",
+            parent: "ABSENT",
             status: "SUCCESS", // Check if status is SUCCESS
           },
         });
 
         return !!attendanceSchedule; // Return true if a matching record is found, otherwise false
       },
+
       async getNonCheckedOutEmployees() {
         const today = new Date();
         const todayStart = startOfDay(today); // Start of the day in PST
         const todayEnd = endOfDay(today);
-      
-        // Find all employees who have not been deleted
+
+        // Find all employees who have not been deleted and are not RESIGNED
         const allEmployees = await prisma.employee.findMany({
           select: { id: true },
-          where: { isDeleted: null },
+          where: {
+            isDeleted: null,
+            status: {
+              not: "RESIGNED",
+            },
+          },
         });
-      
+
         const allEmployeeIds = allEmployees.map((e) => e.id);
-      
-        // Find attendance records for today where checkOut is null
+
+        // Find attendance records for today where checkOut is null and status is PRESENT
         const nonCheckedOutAttendance = await prisma.attendance.findMany({
           where: {
             date: {
               gte: todayStart,
               lte: todayEnd,
             },
-            checkOut: null, // Condition to get only those where checkOut is null
+            checkOut: null,
+            comment:null, // Condition for no check-out
+            status: "PRESENT", // Condition for PRESENT status
           },
           select: { employeeId: true },
         });
-      
+
         // Extract employee IDs with non-checked-out attendance
         const nonCheckedOutEmployeeIds = nonCheckedOutAttendance.map(
           (attendance) => attendance.employeeId
         );
-      
-        // Return only employees who are in today's non-checked-out attendance
-        const result = allEmployeeIds.filter((id) => nonCheckedOutEmployeeIds.includes(id));
-      
-        return result;
-      }
-,      
 
+        // Return only employees who are in today's non-checked-out attendance
+        const result = allEmployeeIds.filter((id) =>
+          nonCheckedOutEmployeeIds.includes(id)
+        );
+
+        return result;
+      },
       async getNonMarkedEmployees() {
         const today = new Date();
         const todayStart = startOfDay(today); // Start of the day in PST
@@ -68,7 +76,12 @@ const attendanceScheduleModel = prisma.$extends({
 
         const allEmployees = await prisma.employee.findMany({
           select: { id: true },
-          where: { isDeleted: null },
+          where: {
+            isDeleted: null,
+            status: {
+              not: "RESIGNED",
+            },
+          },
         });
 
         const allEmployeeIds = allEmployees.map((e) => e.id);
@@ -83,7 +96,9 @@ const attendanceScheduleModel = prisma.$extends({
           select: { employeeId: true },
         });
 
-        const markedEmployeeIds = markedAttendance.map((attendance) => attendance.employeeId);
+        const markedEmployeeIds = markedAttendance.map(
+          (attendance) => attendance.employeeId
+        );
 
         const nonMarkedEmployeeIds = allEmployeeIds.filter(
           (id) => !markedEmployeeIds.includes(id)

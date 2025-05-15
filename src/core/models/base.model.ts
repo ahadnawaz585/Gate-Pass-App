@@ -125,7 +125,6 @@ const prisma = basePrisma.$extends({
             isDeleted: null,
           },
         });
-
         return data;
       },
 

@@ -10,6 +10,9 @@ const employeeModel = prisma.$extends({
         const data = await this.findMany({
           where: {
             isDeleted: null,
+            status: {
+              not: "RESIGNED",
+            },
           },
           select: {
             id: true,
@@ -39,7 +42,7 @@ const employeeModel = prisma.$extends({
         return data;
       },
 
-     async gpFindEmployeeByUserId(this:any,userId:string){
+      async gpFindEmployeeByUserId(this: any, userId: string) {
         const data = await prisma.user.findUnique({
           where: {
             id: userId,
