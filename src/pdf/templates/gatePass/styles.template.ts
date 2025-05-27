@@ -14,4 +14,3 @@ export const styles = {
       margin: [0, 5, 0, 5],
     },
   };
-  

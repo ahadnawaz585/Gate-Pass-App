@@ -31,14 +31,28 @@ export const generateGatePassTemplate = (
     detailsTableBody.push(row);
   }
 
-  // Creating item blocks with enhanced styling
+  // Creating item blocks with enhanced styling and sorted serial numbers
   const blocks: any[] = [];
   data.items.forEach((item: Item, index: number) => {
+    // Sort serial numbers (handles both numeric and alphanumeric sorting)
+    const sortedSerialNos = [...item.serialNos].sort((a, b) => {
+      // Try numeric comparison first
+      const numA = parseInt(a, 10);
+      const numB = parseInt(b, 10);
+      
+      if (!isNaN(numA) && !isNaN(numB)) {
+        return numA - numB;
+      }
+      
+      // Fall back to string comparison for alphanumeric serial numbers
+      return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+    });
+
     blocks.push({
       stack: [
         { text: `${index + 1}. ${item.name}`, style: "itemName" },
         { text: `Quantity: ${item.quantity}`, style: "itemDetail" },
-        { text: `Serial Numbers: ${item.serialNos.join(", ")}`, style: "serialNumberText" },
+        { text: `Serial Numbers: ${sortedSerialNos.join(", ")}`, style: "serialNumberText" },
       ],
       margin: [0, 2, 0, 2],
       border: [false, false, false, true],
@@ -120,7 +134,8 @@ export const generateGatePassTemplate = (
         fontSize: 10
       },
       serialNumberText: {
-        fontSize: 8
+        fontSize: 11, // Increased from 8 to 11 for better readability
+        bold: true    // Added bold to make serial numbers more prominent
       },
       contactInfo: {
         fontSize: 9
@@ -128,3 +143,4 @@ export const generateGatePassTemplate = (
     },
   };
 };
+
