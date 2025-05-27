@@ -6,204 +6,141 @@ export const generateGatePassTemplate = (
   data: DetailedGatePass,
   logoDataURL: string
 ): TDocumentDefinitions => {
-  // Group details into logical sections for compact display
-  const leftColumnDetails = [
-    { label: "Customer", value: data.customername },
-    { label: "Location", value: data.location },
-    { label: "Vehicle No", value: data.vehicleNo },
-    { label: "Store Incharge", value: data.storeIncharge }
-  ];
+  const details: any[] = [];
 
-  const rightColumnDetails = [
+  // Collecting gate pass details
+  const detailFields = [
+    { label: "Customer", value: data.customername },
     { label: "Issued At", value: formatDate(data.issuedAt.toString()) },
     { label: "Valid Until", value: formatDate(data?.validUntil?.toString() || '') },
     { label: "Status", value: data.status },
-    { label: "Notes", value: data.gatepassnotes || 'N/A' }
+    { label: "Location", value: data.location },
+    { label: "Vehicle No", value: data.vehicleNo },
+    { label: "Store Incharge", value: data.storeIncharge },
+    { label: "Notes", value: data.gatepassnotes }
   ];
 
-  // Create compact details layout
-  const detailsRows = [];
-  for (let i = 0; i < Math.max(leftColumnDetails.length, rightColumnDetails.length); i++) {
-    const leftDetail = leftColumnDetails[i];
-    const rightDetail = rightColumnDetails[i];
-    
-    detailsRows.push([
-      leftDetail ? { text: leftDetail.label, style: "labelText" } : '',
-      leftDetail ? { text: leftDetail.value, style: "valueText" } : '',
-      rightDetail ? { text: rightDetail.label, style: "labelText" } : '',
-      rightDetail ? { text: rightDetail.value, style: "valueText" } : ''
-    ]);
+  // Arrange details in three columns
+  const detailsTableBody = [];
+  for (let i = 0; i < detailFields.length; i += 3) {
+    const row = [
+      { text: `${detailFields[i].label}: ${detailFields[i].value}`, style: "detailsText" },
+      { text: detailFields[i + 1] ? `${detailFields[i + 1].label}: ${detailFields[i + 1].value}` : '', style: "detailsText" },
+      { text: detailFields[i + 2] ? `${detailFields[i + 2].label}: ${detailFields[i + 2].value}` : '', style: "detailsText" }
+    ];
+    detailsTableBody.push(row);
   }
 
-  // Create compact items table
-  const itemsTableBody = [
-    [
-      { text: '#', style: 'tableHeader' },
-      { text: 'Item Name', style: 'tableHeader' },
-      { text: 'Qty', style: 'tableHeader' },
-      { text: 'Serial Numbers', style: 'tableHeader' }
-    ]
-  ];
-
+  // Creating item blocks with enhanced styling and sorted serial numbers
+  const blocks: any[] = [];
   data.items.forEach((item: Item, index: number) => {
-    // Sort serial numbers efficiently
+    // Sort serial numbers (handles both numeric and alphanumeric sorting)
     const sortedSerialNos = [...item.serialNos].sort((a, b) => {
+      // Try numeric comparison first
       const numA = parseInt(a, 10);
       const numB = parseInt(b, 10);
-      return !isNaN(numA) && !isNaN(numB) ? numA - numB : 
-             a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+      
+      if (!isNaN(numA) && !isNaN(numB)) {
+        return numA - numB;
+      }
+      
+      // Fall back to string comparison for alphanumeric serial numbers
+      return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
     });
 
-    itemsTableBody.push([
-      { text: (index + 1).toString(), style: 'tableCell' },
-      { text: item.name, style: 'tableCell' },
-      { text: item.quantity.toString(), style: 'tableCell' },
-      { text: sortedSerialNos.join(", "), style: 'serialCell' }
-    ]);
+    blocks.push({
+      stack: [
+        { text: `${index + 1}. ${item.name}`, style: "itemName" },
+        { text: `Quantity: ${item.quantity}`, style: "itemDetail" },
+        { text: `Serial Numbers: ${sortedSerialNos.join(", ")}`, style: "serialNumberText" },
+      ],
+      margin: [0, 2, 0, 2],
+      border: [false, false, false, true],
+      fillColor: index % 2 === 0 ? '#f2f2f2' : '#ffffff',
+    });
   });
 
   return {
-    pageSize: 'A4',
-    pageMargins: [40, 60, 40, 50],
-    header: {
-      columns: [
-        { image: logoDataURL, width: 40, alignment: 'left', margin: [40, 20, 0, 0] },
-        {
-          stack: [
-            { text: 'GATE PASS', style: 'documentTitle' },
-            // { text: `GP-${data.id || 'XXXX'}`, style: 'documentNumber' }
-          ],
-          alignment: 'center',
-          margin: [0, 15, 0, 0]
-        },
-        {
-          stack: [
-            { text: 'info@okashasmart.com', style: 'companyContact' },
-            { text: '+92 300 1110888', style: 'companyContact' },
-            { text: '59, Block J Johar Town, Lahore', style: 'companyContact' }
-          ],
-          alignment: 'right',
-          margin: [0, 15, 40, 0]
-        }
-      ]
-    },
+    header: { image: logoDataURL, width: 50, alignment: "center" },
     content: [
-      // Compact details section
       {
-        style: 'detailsTable',
-        table: {
-          widths: ['15%', '35%', '15%', '35%'],
-          body: detailsRows
-        },
-        layout: {
-          hLineWidth: () => 0.5,
-          vLineWidth: () => 0.5,
-          hLineColor: () => '#cccccc',
-          vLineColor: () => '#cccccc',
-          paddingTop: () => 4,
-          paddingBottom: () => 4,
-          paddingLeft: () => 6,
-          paddingRight: () => 6
-        },
-        margin: [0, 20, 0, 15]
+        text: [
+          { text: "info@okashasmart.com | ", style: "contactInfo" },
+          { text: "+92 300 1110888 | ", style: "contactInfo" },
+          { text: "59, Block J Johar Town, Lahore, 54782", style: "contactInfo" },
+        ],
+        alignment: "center",
+        margin: [0, 10, 0, 10],
       },
-      
-      // Compact items section
       {
-        style: 'itemsTable',
+        text: 'Customer Information',
+        style: 'sectionHeader',
+        margin: [0, 10, 0, 5],
+      },
+      {
+        style: "detailsContainer",
         table: {
-          widths: ['8%', '35%', '12%', '45%'],
-          body: itemsTableBody,
-          headerRows: 1
+          widths: ['33%', '33%', '33%'],
+          body: detailsTableBody
         },
-        layout: {
-          hLineWidth: (i, node) => i === 0 || i === 1 || i === node.table.body.length ? 1 : 0.5,
-          vLineWidth: () => 0.5,
-          hLineColor: () => '#333333',
-          vLineColor: () => '#cccccc',
-          fillColor: (rowIndex) => rowIndex === 0 ? '#f0f0f0' : (rowIndex % 2 === 0 ? '#fafafa' : null),
-          paddingTop: () => 5,
-          paddingBottom: () => 5,
-          paddingLeft: () => 6,
-          paddingRight: () => 6
+        layout: 'noBorders'
+      },
+      {
+        text: 'Items',
+        style: 'sectionHeader',
+        margin: [0, 10, 0, 5],
+      },
+      {
+        style: "itemsContainer",
+        table: {
+          widths: ['*'],
+          body: blocks.map(block => [{ stack: block.stack, fillColor: block.fillColor }])
         },
-        margin: [0, 0, 0, 20]
+        layout: 'noBorders'
       }
     ],
     footer: (currentPage, pageCount) => ({
-      columns: [
-        { text: `Generated: ${new Date().toLocaleDateString()}`, style: 'footerText', alignment: 'left' },
-        { text: `Page ${currentPage} of ${pageCount}`, style: 'footerText', alignment: 'right' }
-      ],
-      margin: [40, 0, 40, 20]
+      text: `${currentPage} of ${pageCount}`,
+      alignment: "center",
+      margin: [0, 0, 0, 10],
     }),
     styles: {
-      documentTitle: {
-        fontSize: 16,
+      headerTitle: {
+        fontSize: 18,
         bold: true,
-        color: '#333333'
-      },
-      documentNumber: {
-        fontSize: 12,
-        color: '#666666',
-        margin: [0, 2, 0, 0]
-      },
-      companyContact: {
-        fontSize: 8,
-        color: '#666666',
-        margin: [0, 1, 0, 0]
-      },
-      labelText: {
-        fontSize: 9,
-        bold: true,
-        color: '#333333'
-      },
-      valueText: {
-        fontSize: 9,
-        color: '#000000'
-      },
-      tableHeader: {
-        fontSize: 10,
-        bold: true,
-        color: '#333333',
-        alignment: 'center'
-      },
-      tableCell: {
-        fontSize: 9,
-        color: '#000000'
-      },
-      serialCell: {
-        fontSize: 9,
-        bold: true,
-        color: '#000000'
-      },
-      footerText: {
-        fontSize: 8,
-        color: '#666666'
-      },
-      detailsTable: {
+        alignment: 'center',
         margin: [0, 10, 0, 10]
       },
-      itemsTable: {
-        margin: [0, 0, 0, 10]
-      }
-    }
+      sectionHeader: {
+        fontSize: 14,
+        bold: true,
+        margin: [0, 10, 0, 5]
+      },
+      detailsText: { 
+        fontSize: 10,
+        margin: [0, 0, 0, 0]
+      },
+      detailsContainer: { 
+        margin: [0, 10, 0, 10] 
+      },
+      itemsContainer: {
+        margin: [0, 10, 0, 10]
+      },
+      itemName: { 
+        bold: true,
+        fontSize: 12
+      },
+      itemDetail: {
+        fontSize: 10
+      },
+      serialNumberText: {
+        fontSize: 11, // Increased from 8 to 11 for better readability
+        bold: true    // Added bold to make serial numbers more prominent
+      },
+      contactInfo: {
+        fontSize: 9
+      },
+    },
   };
 };
 
-export const styles = {
-  header: {
-    fontSize: 16,
-    bold: true,
-    alignment: "center",
-    margin: [0, 0, 0, 10],
-  },
-  detailsText: {
-    fontSize: 9,
-    margin: [0, 1, 0, 1],
-  },
-  itemBox: {
-    fontSize: 9,
-    margin: [0, 2, 0, 2],
-  },
-};
