@@ -1,55 +1,17 @@
 import { TDocumentDefinitions, Content, ContentStack, ContentColumns, ContentTable, Margins } from "pdfmake/interfaces";
 
-// Pakistani timezone utility functions
-const convertToPakistaniTime = (dateString: string | Date): Date => {
-  const date = new Date(dateString);
-  // Convert to Pakistani time (UTC+5)
-  const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
-  const pakistaniTime = new Date(utc + (5 * 3600000)); // UTC+5
-  return pakistaniTime;
-};
-
-const formatPakistaniDate = (dateString: string | Date): string => {
-  const pakistaniDate = convertToPakistaniTime(dateString);
-  return pakistaniDate.toLocaleDateString('en-US', {
-    month: 'short',
-    day: '2-digit',
-    year: 'numeric',
-    timeZone: 'Asia/Karachi'
-  });
-};
-
-const formatPakistaniTime = (dateString: string | Date): string => {
-  const pakistaniTime = convertToPakistaniTime(dateString);
-  return pakistaniTime.toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-    timeZone: 'Asia/Karachi'
-  });
-};
-
-const getCurrentPakistaniDate = (): string => {
-  const now = new Date();
-  return now.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: '2-digit',
-    timeZone: 'Asia/Karachi'
-  });
-};
-
 export const generateAttendanceTemplate = (
   data: any[],
   logoDataURL: string,
   companyName: string = "Quick Pass",
   department: string = "All Departments",
-  period: string = "Current Period"
+  period: string = "Current Period",
+  timezone: string = "Asia/Karachi" // Add timezone parameter with default
 ): TDocumentDefinitions => {
   // Calculate statistics
   const totalEmployees = new Set(data.map(record => record.code)).size;
   const totalRecords = data.length;
-  const averageHoursPerDay = calculateAverageHours(data);
+  const averageHoursPerDay = calculateAverageHours(data, timezone);
   
   // Group by employee code
   const employeeGroups = groupByEmployeeCode(data);
@@ -100,7 +62,12 @@ export const generateAttendanceTemplate = (
               text: [
                 { text: 'Generated: ', style: 'metadataLabel' },
                 { 
-                  text: `${getCurrentPakistaniDate()} (PKT)`,
+                  text: new Date().toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: '2-digit',
+                    timeZone: timezone
+                  }),
                   style: 'metadataValue'
                 }
               ],
@@ -194,16 +161,16 @@ export const generateAttendanceTemplate = (
       [
         { text: '#', style: 'tableHeader', alignment: 'center', width: 25 },
         { text: 'DATE', style: 'tableHeader', alignment: 'center' },
-        { text: 'IN (PKT)', style: 'tableHeader', alignment: 'center' },
-        { text: 'OUT (PKT)', style: 'tableHeader', alignment: 'center' },
+        { text: 'IN', style: 'tableHeader', alignment: 'center' },
+        { text: 'OUT', style: 'tableHeader', alignment: 'center' },
         { text: 'HRS', style: 'tableHeader', alignment: 'center' },
         { text: 'STATUS', style: 'tableHeader', alignment: 'center' },
       ],
     ];
     
     employeeRecords.forEach((record, index) => {
-      const checkInTime = record.checkIn ? convertToPakistaniTime(record.checkIn) : null;
-      const checkOutTime = record.checkOut ? convertToPakistaniTime(record.checkOut) : null;
+      const checkInTime = record.checkIn ? convertToTimezone(record.checkIn, timezone) : null;
+      const checkOutTime = record.checkOut ? convertToTimezone(record.checkOut, timezone) : null;
       
       let hoursWorked = '-';
       if (checkInTime && checkOutTime) {
@@ -218,17 +185,32 @@ export const generateAttendanceTemplate = (
           alignment: 'center'
         },
         {
-          text: record.date ? formatPakistaniDate(record.date) : '-',
+          text: record.date ? convertToTimezone(record.date, timezone).toLocaleDateString('en-US', {
+            month: 'short',
+            day: '2-digit',
+            year: 'numeric',
+            timeZone: timezone
+          }) : '-',
           style: 'tableCell',
           alignment: 'center'
         },
         {
-          text: record.checkIn ? formatPakistaniTime(record.checkIn) : '-',
+          text: checkInTime ? checkInTime.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+            timeZone: timezone
+          }) : '-',
           style: 'tableCell',
           alignment: 'center'
         },
         {
-          text: record.checkOut ? formatPakistaniTime(record.checkOut) : '-',
+          text: checkOutTime ? checkOutTime.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+            timeZone: timezone
+          }) : '-',
           style: 'tableCell',
           alignment: 'center'
         },
@@ -275,7 +257,7 @@ export const generateAttendanceTemplate = (
     // Calculate employee-specific statistics
     const totalAttendanceDays = employeeRecords.length;
     const presentDays = employeeRecords.filter(r => r.status === 'PRESENT').length;
-    const avgHours = calculateAverageHoursForEmployee(employeeRecords);
+    const avgHours = calculateAverageHoursForEmployee(employeeRecords, timezone);
     
     const employeeStats: ContentColumns = {
       columns: [
@@ -532,15 +514,54 @@ export const generateAttendanceTemplate = (
   };
 };
 
-// Helper functions with Pakistani time zone adjustments
-function calculateAverageHours(data: any[]): string {
+// Helper function to convert timestamps to the desired timezone
+function convertToTimezone(timestamp: string | Date, timezone: string): Date {
+  // If timestamp is already a Date object, use it
+  if (timestamp instanceof Date) {
+    return timestamp;
+  }
+  
+  // Parse the timestamp string
+  let date: Date;
+  
+  // Handle different timestamp formats
+  if (typeof timestamp === 'string') {
+    // Check if it's an ISO string or needs parsing
+    if (timestamp.includes('T') || timestamp.includes('Z')) {
+      // ISO format
+      date = new Date(timestamp);
+    } else {
+      // Try parsing as-is first
+      date = new Date(timestamp);
+      
+      // If invalid, try other common formats
+      if (isNaN(date.getTime())) {
+        // Try parsing with explicit format handling
+        date = new Date(timestamp.replace(/(\d{1,2})-(\w{3})-(\d{4})/, '$2 $1, $3'));
+      }
+    }
+  } else {
+    date = new Date(timestamp);
+  }
+  
+  // Ensure the date is valid
+  if (isNaN(date.getTime())) {
+    console.warn('Invalid date timestamp:', timestamp);
+    return new Date(); // Return current date as fallback
+  }
+  
+  return date;
+}
+
+// Helper functions with timezone support
+function calculateAverageHours(data: any[], timezone: string): string {
   let totalHours = 0;
   let validRecords = 0;
   
   data.forEach(record => {
     if (record.checkIn && record.checkOut) {
-      const checkInTime = convertToPakistaniTime(record.checkIn);
-      const checkOutTime = convertToPakistaniTime(record.checkOut);
+      const checkInTime = convertToTimezone(record.checkIn, timezone);
+      const checkOutTime = convertToTimezone(record.checkOut, timezone);
       const hours = (checkOutTime.getTime() - checkInTime.getTime()) / (1000 * 60 * 60);
       
       if (hours > 0 && hours < 24) { // Filter out potentially erroneous records
@@ -553,14 +574,14 @@ function calculateAverageHours(data: any[]): string {
   return validRecords > 0 ? (totalHours / validRecords).toFixed(1) : "0.0";
 }
 
-function calculateAverageHoursForEmployee(records: any[]): string {
+function calculateAverageHoursForEmployee(records: any[], timezone: string): string {
   let totalHours = 0;
   let validRecords = 0;
   
   records.forEach(record => {
     if (record.checkIn && record.checkOut) {
-      const checkInTime = convertToPakistaniTime(record.checkIn);
-      const checkOutTime = convertToPakistaniTime(record.checkOut);
+      const checkInTime = convertToTimezone(record.checkIn, timezone);
+      const checkOutTime = convertToTimezone(record.checkOut, timezone);
       const hours = (checkOutTime.getTime() - checkInTime.getTime()) / (1000 * 60 * 60);
       
       if (hours > 0 && hours < 24) {
@@ -573,12 +594,17 @@ function calculateAverageHoursForEmployee(records: any[]): string {
   return validRecords > 0 ? (totalHours / validRecords).toFixed(1) : "0.0";
 }
 
-function groupByDate(data: any[]): Record<string, any[]> {
+function groupByDate(data: any[], timezone: string): Record<string, any[]> {
   const groups: Record<string, any[]> = {};
   
   data.forEach(record => {
     if (record.date) {
-      const dateKey = formatPakistaniDate(record.date);
+      const dateKey = convertToTimezone(record.date, timezone).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit',
+        timeZone: timezone
+      });
       
       if (!groups[dateKey]) {
         groups[dateKey] = [];
@@ -608,8 +634,5 @@ function groupByEmployeeCode(data: any[]): Record<string, any[]> {
 }
 
 function generateReportId(): string {
-  // Generate report ID using Pakistani time
-  const now = new Date();
-  const pakistaniDate = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Karachi"}));
-  return `REP-${pakistaniDate.getFullYear()}${(pakistaniDate.getMonth() + 1).toString().padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
+  return `REP-${new Date().getFullYear()}${(new Date().getMonth() + 1).toString().padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
 }

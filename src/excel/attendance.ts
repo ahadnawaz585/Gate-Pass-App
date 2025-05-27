@@ -15,51 +15,6 @@ interface AttendanceRecord {
   comment?: string;
 }
 
-// Pakistani timezone utility functions
-const convertToPakistaniTime = (dateString: string | Date): Date => {
-  const date = new Date(dateString);
-  // Convert to Pakistani time (UTC+5)
-  const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
-  const pakistaniTime = new Date(utc + (5 * 3600000)); // UTC+5
-  return pakistaniTime;
-};
-
-const formatPakistaniDate = (dateString: string | Date): string => {
-  const pakistaniDate = convertToPakistaniTime(dateString);
-  return pakistaniDate.toLocaleDateString('en-US', {
-    month: 'short',
-    day: '2-digit',
-    year: 'numeric',
-    timeZone: 'Asia/Karachi'
-  });
-};
-
-const formatPakistaniTime = (dateString: string | Date): string => {
-  const pakistaniTime = convertToPakistaniTime(dateString);
-  return pakistaniTime.toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-    timeZone: 'Asia/Karachi'
-  });
-};
-
-const getCurrentPakistaniDateTime = (): string => {
-  const now = new Date();
-  return now.toLocaleString('en-US', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-    timeZone: 'Asia/Karachi'
-  })
-  .replace(/, /g, '-')
-  .replace(/ /g, '-')
-  .replace(/:/g, '');
-};
-
 export class AttendanceExcelUtility {
   async create(attendanceData: AttendanceRecord[]): Promise<{ wbout: Buffer; fileName: string }> {
     const workbook = new ExcelJS.Workbook();
@@ -79,12 +34,23 @@ export class AttendanceExcelUtility {
     // Write workbook to buffer
     const wbout = await workbook.xlsx.writeBuffer() as Buffer;
 
-    // Format current date and time for filename using Pakistani time
-    const currentDateTime = getCurrentPakistaniDateTime();
+    // Format current date and time for filename
+    const currentDateTime = new Date()
+      .toLocaleString('en-US', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      })
+      .replace(/, /g, '-')
+      .replace(/ /g, '-')
+      .replace(/:/g, '');
 
     return {
       wbout,
-      fileName: `Attendance-Report-${currentDateTime}-PKT.xlsx`,
+      fileName: `Attendance-Report-${currentDateTime}.xlsx`,
     };
   }
 
@@ -101,8 +67,8 @@ export class AttendanceExcelUtility {
       { header: 'Average Hours/Day', key: 'avgHours', width: 18 },
       { header: 'Present Days', key: 'presentDays', width: 15 },
       { header: 'Late Check-ins', key: 'lateDays', width: 15 },
-      { header: 'First Check-in (PKT)', key: 'firstDate', width: 20 },
-      { header: 'Last Check-in (PKT)', key: 'lastDate', width: 20 },
+      { header: 'First Check-in', key: 'firstDate', width: 15 },
+      { header: 'Last Check-in', key: 'lastDate', width: 15 },
     ];
 
     // Add summary rows for each employee
@@ -121,8 +87,9 @@ export class AttendanceExcelUtility {
         (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
       );
 
-      const firstDate = sortedByDate.length > 0 ? sortedByDate[0].date : null;
-      const lastDate = sortedByDate.length > 0 ? sortedByDate[sortedByDate.length - 1].date : null;
+      const firstDate = sortedByDate.length > 0 ? new Date(sortedByDate[0].date) : null;
+      const lastDate =
+        sortedByDate.length > 0 ? new Date(sortedByDate[sortedByDate.length - 1].date) : null;
 
       worksheet.addRow({
         code: code,
@@ -132,8 +99,20 @@ export class AttendanceExcelUtility {
         avgHours: `${avgHours}h`,
         presentDays: presentDays,
         lateDays: lateDays,
-        firstDate: firstDate ? formatPakistaniDate(firstDate) : '-',
-        lastDate: lastDate ? formatPakistaniDate(lastDate) : '-',
+        firstDate: firstDate
+          ? firstDate.toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: '2-digit',
+            })
+          : '-',
+        lastDate: lastDate
+          ? lastDate.toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: '2-digit',
+            })
+          : '-',
       });
     });
 
@@ -168,18 +147,18 @@ export class AttendanceExcelUtility {
       { header: 'Employee Code', key: 'code', width: 20 },
       { header: 'Employee Name', key: 'fullName', width: 25 },
       { header: 'Department', key: 'department', width: 20 },
-      { header: 'Date (PKT)', key: 'date', width: 18 },
-      { header: 'Check In (PKT)', key: 'checkIn', width: 18 },
-      { header: 'Check Out (PKT)', key: 'checkOut', width: 18 },
+      { header: 'Date', key: 'date', width: 15 },
+      { header: 'Check In', key: 'checkIn', width: 15 },
+      { header: 'Check Out', key: 'checkOut', width: 15 },
       { header: 'Hours', key: 'hours', width: 10 },
       { header: 'Status', key: 'status', width: 12 },
-      { header: 'Comment', key: 'comment', width: 30 },
+      { header: 'Comment', key: 'comment', width: 30 }, // Added comment column
     ];
 
     // Add data rows
     attendanceData.forEach((record) => {
-      const checkInTime = record.checkIn ? convertToPakistaniTime(record.checkIn) : null;
-      const checkOutTime = record.checkOut ? convertToPakistaniTime(record.checkOut) : null;
+      const checkInTime = record.checkIn ? new Date(record.checkIn) : null;
+      const checkOutTime = record.checkOut ? new Date(record.checkOut) : null;
 
       let hoursWorked = '-';
       if (checkInTime && checkOutTime) {
@@ -191,12 +170,30 @@ export class AttendanceExcelUtility {
         code: record.code || '',
         fullName: `${record.employeeName} ${record.employeeSurname}`,
         department: record.department || '',
-        date: record.date ? formatPakistaniDate(record.date) : '',
-        checkIn: record.checkIn ? formatPakistaniTime(record.checkIn) : '',
-        checkOut: record.checkOut ? formatPakistaniTime(record.checkOut) : '',
+        date: record.date
+          ? new Date(record.date).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: '2-digit',
+            })
+          : '',
+        checkIn: checkInTime
+          ? checkInTime.toLocaleTimeString('en-US', {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: true,
+            })
+          : '',
+        checkOut: checkOutTime
+          ? checkOutTime.toLocaleTimeString('en-US', {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: true,
+            })
+          : '',
         hours: hoursWorked,
         status: record.status || '',
-        comment: record.comment || '-',
+        comment: record.comment || '-', // Display '-' if comment is empty
       });
     });
 
@@ -357,8 +354,8 @@ export class AttendanceExcelUtility {
 
     data.forEach((record) => {
       if (record.checkIn && record.checkOut) {
-        const checkInTime = convertToPakistaniTime(record.checkIn);
-        const checkOutTime = convertToPakistaniTime(record.checkOut);
+        const checkInTime = new Date(record.checkIn);
+        const checkOutTime = new Date(record.checkOut);
         const hours = (checkOutTime.getTime() - checkInTime.getTime()) / (1000 * 60 * 60);
 
         if (hours > 0 && hours < 24) {
