@@ -1,5 +1,44 @@
 import { TDocumentDefinitions, Content, ContentStack, ContentColumns, ContentTable, Margins } from "pdfmake/interfaces";
 
+// Pakistani timezone utility functions
+const convertToPakistaniTime = (dateString: string | Date): Date => {
+  const date = new Date(dateString);
+  // Convert to Pakistani time (UTC+5)
+  const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
+  const pakistaniTime = new Date(utc + (5 * 3600000)); // UTC+5
+  return pakistaniTime;
+};
+
+const formatPakistaniDate = (dateString: string | Date): string => {
+  const pakistaniDate = convertToPakistaniTime(dateString);
+  return pakistaniDate.toLocaleDateString('en-US', {
+    month: 'short',
+    day: '2-digit',
+    year: 'numeric',
+    timeZone: 'Asia/Karachi'
+  });
+};
+
+const formatPakistaniTime = (dateString: string | Date): string => {
+  const pakistaniTime = convertToPakistaniTime(dateString);
+  return pakistaniTime.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+    timeZone: 'Asia/Karachi'
+  });
+};
+
+const getCurrentPakistaniDate = (): string => {
+  const now = new Date();
+  return now.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+    timeZone: 'Asia/Karachi'
+  });
+};
+
 export const generateAttendanceTemplate = (
   data: any[],
   logoDataURL: string,
@@ -61,11 +100,7 @@ export const generateAttendanceTemplate = (
               text: [
                 { text: 'Generated: ', style: 'metadataLabel' },
                 { 
-                  text: new Date().toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'short',
-                    day: '2-digit'
-                  }),
+                  text: `${getCurrentPakistaniDate()} (PKT)`,
                   style: 'metadataValue'
                 }
               ],
@@ -159,16 +194,16 @@ export const generateAttendanceTemplate = (
       [
         { text: '#', style: 'tableHeader', alignment: 'center', width: 25 },
         { text: 'DATE', style: 'tableHeader', alignment: 'center' },
-        { text: 'IN', style: 'tableHeader', alignment: 'center' },
-        { text: 'OUT', style: 'tableHeader', alignment: 'center' },
+        { text: 'IN (PKT)', style: 'tableHeader', alignment: 'center' },
+        { text: 'OUT (PKT)', style: 'tableHeader', alignment: 'center' },
         { text: 'HRS', style: 'tableHeader', alignment: 'center' },
         { text: 'STATUS', style: 'tableHeader', alignment: 'center' },
       ],
     ];
     
     employeeRecords.forEach((record, index) => {
-      const checkInTime = record.checkIn ? new Date(record.checkIn) : null;
-      const checkOutTime = record.checkOut ? new Date(record.checkOut) : null;
+      const checkInTime = record.checkIn ? convertToPakistaniTime(record.checkIn) : null;
+      const checkOutTime = record.checkOut ? convertToPakistaniTime(record.checkOut) : null;
       
       let hoursWorked = '-';
       if (checkInTime && checkOutTime) {
@@ -183,29 +218,17 @@ export const generateAttendanceTemplate = (
           alignment: 'center'
         },
         {
-          text: record.date ? new Date(record.date).toLocaleDateString('en-US', {
-            month: 'short',
-            day: '2-digit',
-            year: 'numeric'
-          }) : '-',
+          text: record.date ? formatPakistaniDate(record.date) : '-',
           style: 'tableCell',
           alignment: 'center'
         },
         {
-          text: checkInTime ? checkInTime.toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true
-          }) : '-',
+          text: record.checkIn ? formatPakistaniTime(record.checkIn) : '-',
           style: 'tableCell',
           alignment: 'center'
         },
         {
-          text: checkOutTime ? checkOutTime.toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true
-          }) : '-',
+          text: record.checkOut ? formatPakistaniTime(record.checkOut) : '-',
           style: 'tableCell',
           alignment: 'center'
         },
@@ -509,15 +532,15 @@ export const generateAttendanceTemplate = (
   };
 };
 
-// Helper functions
+// Helper functions with Pakistani time zone adjustments
 function calculateAverageHours(data: any[]): string {
   let totalHours = 0;
   let validRecords = 0;
   
   data.forEach(record => {
     if (record.checkIn && record.checkOut) {
-      const checkInTime = new Date(record.checkIn);
-      const checkOutTime = new Date(record.checkOut);
+      const checkInTime = convertToPakistaniTime(record.checkIn);
+      const checkOutTime = convertToPakistaniTime(record.checkOut);
       const hours = (checkOutTime.getTime() - checkInTime.getTime()) / (1000 * 60 * 60);
       
       if (hours > 0 && hours < 24) { // Filter out potentially erroneous records
@@ -536,8 +559,8 @@ function calculateAverageHoursForEmployee(records: any[]): string {
   
   records.forEach(record => {
     if (record.checkIn && record.checkOut) {
-      const checkInTime = new Date(record.checkIn);
-      const checkOutTime = new Date(record.checkOut);
+      const checkInTime = convertToPakistaniTime(record.checkIn);
+      const checkOutTime = convertToPakistaniTime(record.checkOut);
       const hours = (checkOutTime.getTime() - checkInTime.getTime()) / (1000 * 60 * 60);
       
       if (hours > 0 && hours < 24) {
@@ -555,11 +578,7 @@ function groupByDate(data: any[]): Record<string, any[]> {
   
   data.forEach(record => {
     if (record.date) {
-      const dateKey = new Date(record.date).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: '2-digit'
-      });
+      const dateKey = formatPakistaniDate(record.date);
       
       if (!groups[dateKey]) {
         groups[dateKey] = [];
@@ -589,5 +608,8 @@ function groupByEmployeeCode(data: any[]): Record<string, any[]> {
 }
 
 function generateReportId(): string {
-  return `REP-${new Date().getFullYear()}${(new Date().getMonth() + 1).toString().padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
+  // Generate report ID using Pakistani time
+  const now = new Date();
+  const pakistaniDate = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Karachi"}));
+  return `REP-${pakistaniDate.getFullYear()}${(pakistaniDate.getMonth() + 1).toString().padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
 }
