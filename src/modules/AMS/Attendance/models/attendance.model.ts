@@ -72,7 +72,7 @@ const attendanceModel = prisma.$extends({
           };
         }
 
-        if (existingAttendance && existingAttendance.status === "PRESENT") {
+        if (existingAttendance && (existingAttendance.status === "PRESENT" || existingAttendance.status === "LATE")) {
           if (existingAttendance.checkIn && !existingAttendance.checkOut) {
             return {
               success: true,
@@ -196,7 +196,7 @@ const attendanceModel = prisma.$extends({
       
         if (existingAttendance) {
           // If attendance already exists, mark it as a checkout
-          if (existingAttendance.checkIn && !existingAttendance.checkOut) {
+          if ((existingAttendance.status === "PRESENT" || existingAttendance.status === "LATE") && existingAttendance.checkIn && !existingAttendance.checkOut) {
             const updatedAttendance = await prisma.attendance.update({
               where: { id: existingAttendance.id },
               data: {
